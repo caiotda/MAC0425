@@ -63,3 +63,12 @@ membro(X ,[_|Ys]):-
 
 % EXERCICIO PRA PROXIMA AULA: implementar uma função que concatena duas listas.
 % concat(l1, l2, resultado) - concatena l1 com l2 e armazena em resultado. FAzer de forma recursiva.
+
+
+% add(l1, l2). Se l1 estiver vazio, acabou. Ta tudo em l2
+% do contrario, preciso pegar a lista 1 inteira e jogar no fim de l2.
+% faço isso jogando o primeiro elemento de l1 pro fim de l2.
+
+% talvez a base seja percorrer l2 inteira. Quando l2 estiver vazio, jogo o primeiro elemento de l1 la?
+
+add([H1 | _], [[]| H1]).
