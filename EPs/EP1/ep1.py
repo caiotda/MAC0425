@@ -13,8 +13,8 @@
   ENTENDO QUE EPS SEM ASSINATURA NAO SERAO CORRIGIDOS E,
   AINDA ASSIM, PODERAO SER PUNIDOS POR DESONESTIDADE ACADEMICA.
 
-  Nome :
-  NUSP :
+  Nome : Caio Túlio de Deus Andrade 
+  NUSP : 9797232
 
   Referencias: Com excecao das rotinas fornecidas no enunciado
   e em sala de aula, caso voce tenha utilizado alguma referencia,
@@ -28,6 +28,7 @@
 """
 
 import util
+import math
 
 ############################################################
 # Part 1: Segmentation problem under a unigram model
@@ -44,13 +45,28 @@ class SegmentationProblem(util.Problem):
 
     def initialState(self):
         """ Metodo que implementa retorno da posicao inicial """
-        return [self.query]
+        return self.query
         #raise NotImplementedError
 
     def actions(self, state):
         """ Metodo que implementa retorno da lista de acoes validas
         para um determinado estado
         """
+        minCost = math.inf
+        candidates = []
+
+        last_segmentation_index = state.rfind(' ')
+        if(last_segmentation_index == -1):
+            last_segmentation_index = 0
+        
+        for i in range(last_segmentation_index, len(state.word)):
+            word_to_be_tested = state.word[last_segmentation_index: i]
+            cost = self.unigramCost(word_to_be_tested)
+            if(cost <= minCost):
+                minCost = cost
+                candidates.append(i)
+        
+
         raise NotImplementedError
 
     def nextState(self, state, action):
@@ -78,7 +94,6 @@ def segmentWords(query, unigramCost):
     raise NotImplementedError
 
     # END_YOUR_CODE
-
 ############################################################
 # Part 2: Vowel insertion problem under a bigram cost
 
