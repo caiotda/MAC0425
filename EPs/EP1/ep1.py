@@ -54,15 +54,15 @@ class SegmentationProblem(util.Problem):
         valid_actions = []
 
         last_segmentation_index = state.rfind(' ')
-        if(last_segmentation_index == -1):
-            last_segmentation_index = 0 
+        if(last_segmentation_index == -1): # Nenhuma segmentação encontrada.
+            last_segmentation_index = 0
 
-        minCost = state[last_segmentation_index:] #custo inicial é o da propria palavra.
+        minimal_cost = state[last_segmentation_index:] #custo inicial é o da propria palavra.
         for i in range(last_segmentation_index, len(state) - 1): #evita de pegar a palavra inteira
             word_to_be_tested = state.word[last_segmentation_index: i]
             candidate_cost = self.unigramCost(word_to_be_tested)
-            if(candidate_cost <= minCost):
-                minCost = candidate_cost
+            if(candidate_cost <= minimal_cost):
+                minimal_cost = candidate_cost
                 valid_actions.append(i)
         
         return valid_actions
@@ -75,9 +75,10 @@ class SegmentationProblem(util.Problem):
         possible_actions = self.actions(state) #Talvez seja custoso.
         return len(possible_actions) == 0
 
-    def stepCost(self, state, action):
+    def stepCost(self, state, action): #aqui da pra definir o custo do estado meta como zero, inclusive. (maybe)
         """ Metodo que implementa funcao custo """
-        raise NotImplementedError
+        next_state = self.nextState(state, action)
+        return abs(next_state.cost - state.cost)
 
 
 def segmentWords(query, unigramCost):

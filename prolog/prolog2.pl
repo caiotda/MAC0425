@@ -61,14 +61,56 @@ membro(X ,[X | _] ).
 membro(X ,[_|Ys]):-
     membro(X, Ys).
 
-% EXERCICIO PRA PROXIMA AULA: implementar uma função que concatena duas listas.
-% concat(l1, l2, resultado) - concatena l1 com l2 e armazena em resultado. FAzer de forma recursiva.
 
+concat([], Ys, Ys).
+concat([X1| Xs], Ys, [X1| Zs]) :-
+    concat(Xs, Ys, Zs).
 
-% add(l1, l2). Se l1 estiver vazio, acabou. Ta tudo em l2
-% do contrario, preciso pegar a lista 1 inteira e jogar no fim de l2.
-% faço isso jogando o primeiro elemento de l1 pro fim de l2.
+prefixo([], _).
+prefixo([X | Xs], [X| Ys]) :-
+    prefixo(Xs, Ys).
 
-% talvez a base seja percorrer l2 inteira. Quando l2 estiver vazio, jogo o primeiro elemento de l1 la?
+sufixo(L1, L1).
+sufixo(X, [_|Ys]):-
+    sufixo(X, Ys).
 
-add([H1 | _], [[]| H1]).
+inverte([], Aux, Aux).
+inverte([X|Xs], Aux, Ys) :-
+    inverte([Xs], [X | Aux], Ys).
+
+tamanho([], 0).
+tamanho([_| Xs], N):-
+    tamanho(Xs, M),
+    M is N + 1.
+
+contem_inteiro([X | _]) :- integer(X).
+contem_inteiro([_| Xs]) :- contem_inteiro(Xs).
+
+lista_de_inteiros([]).
+lista_de_inteiros([X| Xs]) :- integer(X), lista_de_inteiros(Xs).
+
+isVowel(V):- member(V, ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']).
+lista_de_vogais([El]) :- isVowel(El).
+lista_de_vogais([X| Xs]) :- isVowel(X), lista_de_vogais(Xs).
+
+%n-esimo elemento da lista
+n_elemento(0, [X| _],  X).
+n_elemento(N, [_| Xs], X):- M is N-1, n_elemento(M, Xs, X).
+
+% Implementação ineficiente: crescimento absurdo da pilha
+fatorial(0, 1).
+fatorial(1, 1).
+fatorial(N, F):- N> 0, M is N-1, fatorial(M, Helper),!, F is Helper * N. %não faço ideia do que o cut faz, mas me fez sentido ele ser usado aqui.
+
+fat(N, F) :- fatAUX(N, 1, F).
+fatAUX(0, F, F).
+fatAUX(N, Acc, F) :-
+    N > 0,
+    Acc1 is Acc * N,
+    M is N - 1,
+    fatAUX(M, Acc1, F).
+% Falta fazer o mesma_geracao.
+
+% implementar fibonacci (com recursão de cauda, usar 4 argumentos : N, fib(n-1), fib(n-2), result)
+
+% fazer um somador de lista. O mesmo com produtoria (somar todos elementos da lista, mesmo com prod)
