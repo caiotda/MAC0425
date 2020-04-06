@@ -40,42 +40,40 @@ class SegmentationProblem(util.Problem):
 
     def isState(self, state):
         """ Metodo que implementa verificacao de estado """
-        return True
+        return len(state) >= len(self.query)
         # raise NotImplementedError
 
     def initialState(self):
         """ Metodo que implementa retorno da posicao inicial """
         return self.query
-        #raise NotImplementedError
 
     def actions(self, state):
         """ Metodo que implementa retorno da lista de acoes validas
         para um determinado estado
         """
-        minCost = math.inf
-        candidates = []
+        valid_actions = []
 
         last_segmentation_index = state.rfind(' ')
         if(last_segmentation_index == -1):
-            last_segmentation_index = 0
-        
-        for i in range(last_segmentation_index, len(state.word)):
-            word_to_be_tested = state.word[last_segmentation_index: i]
-            cost = self.unigramCost(word_to_be_tested)
-            if(cost <= minCost):
-                minCost = cost
-                candidates.append(i)
-        
+            last_segmentation_index = 0 
 
-        raise NotImplementedError
+        minCost = state[last_segmentation_index:] #custo inicial é o da propria palavra.
+        for i in range(last_segmentation_index, len(state) - 1): #evita de pegar a palavra inteira
+            word_to_be_tested = state.word[last_segmentation_index: i]
+            candidate_cost = self.unigramCost(word_to_be_tested)
+            if(candidate_cost <= minCost):
+                minCost = candidate_cost
+                valid_actions.append(i)
+        
+        return valid_actions
 
     def nextState(self, state, action):
         """ Metodo que implementa funcao de transicao """
-        raise NotImplementedError
-
+        return state[:action] + ' ' + state[action:]
     def isGoalState(self, state):
         """ Metodo que implementa teste de meta """
-        raise NotImplementedError
+        possible_actions = self.actions(state) #Talvez seja custoso.
+        return len(possible_actions) == 0
 
     def stepCost(self, state, action):
         """ Metodo que implementa funcao custo """
