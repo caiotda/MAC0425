@@ -29,6 +29,7 @@
 
 import util
 import math
+from time import sleep
 
 ############################################################
 # Part 1: Segmentation problem under a unigram model
@@ -45,26 +46,29 @@ class SegmentationProblem(util.Problem):
 
     def initialState(self):
         """ Metodo que implementa retorno da posicao inicial """
+        print('O estado inicial é: {}'.format(self.query))
         return self.query
 
-    def actions(self, state):
+    def actions(self, state): #problema: ele ta considerando espaços em branco como validos e ta inserindo espaço neles
         """ Metodo que implementa retorno da lista de acoes validas
         para um determinado estado
         """
         valid_actions = []
-
+        sleep(1)
+        print('Estado que chegou: {}'.format(state))
         last_segmentation_index = state.rfind(' ')
         if(last_segmentation_index == -1): # Nenhuma segmentação encontrada.
             last_segmentation_index = 0
+        minimal_cost = self.unigramCost(state[last_segmentation_index:])
 
-        minimal_cost = state[last_segmentation_index:] #custo inicial é o da propria palavra.
-        for i in range(last_segmentation_index, len(state) - 1): #evita de pegar a palavra inteira
-            word_to_be_tested = state.word[last_segmentation_index: i]
+        
+        for i in range(last_segmentation_index, len(state)): #evita de pegar a palavra inteira
+            word_to_be_tested = state[last_segmentation_index: i]
             candidate_cost = self.unigramCost(word_to_be_tested)
-            if(candidate_cost <= minimal_cost):
+            if(candidate_cost < minimal_cost):
                 minimal_cost = candidate_cost
                 valid_actions.append(i)
-        
+        print('Ações possiveis: ', valid_actions)
         return valid_actions
 
     def nextState(self, state, action):
@@ -73,24 +77,30 @@ class SegmentationProblem(util.Problem):
     def isGoalState(self, state):
         """ Metodo que implementa teste de meta """
         possible_actions = self.actions(state) #Talvez seja custoso.
+        print('Ações possiveis: {}'.format(len(possible_actions)))
         return len(possible_actions) == 0
 
     def stepCost(self, state, action): #aqui da pra definir o custo do estado meta como zero, inclusive. (maybe)
         """ Metodo que implementa funcao custo """
         next_state = self.nextState(state, action)
-        return abs(next_state.cost - state.cost)
+        current_cost = self.unigramCost(state)
+        next_cost = self.unigramCost(next_state)
+        return abs(next_cost - current_cost)
 
 
 def segmentWords(query, unigramCost):
-
     if len(query) == 0:
         return ''
+    problem = SegmentationProblem(query, unigramCost)
+    goal_node = util.uniformCostSearch(problem)
+    valid, solution = util.getSolution(goal_node, problem)
+    print('Resultado: {} {} valid? {}'.format(query, solution, valid))
+    return goal_node.state
      
     # BEGIN_YOUR_CODE 
     # Voce pode usar a função getSolution para recuperar a sua solução a partir do no meta
     # valid,solution  = util.getSolution(goalNode,problem)
 
-    raise NotImplementedError
 
     # END_YOUR_CODE
 ############################################################
