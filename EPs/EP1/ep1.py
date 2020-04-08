@@ -54,26 +54,28 @@ class SegmentationProblem(util.Problem):
         para um determinado estado
         """
         valid_actions = []
-        sleep(1)
         print('Estado que chegou: {}'.format(state))
         last_segmentation_index = state.rfind(' ')
         if(last_segmentation_index == -1): # Nenhuma segmentação encontrada.
             last_segmentation_index = 0
+        else:
+            last_segmentation_index += 1
         minimal_cost = self.unigramCost(state[last_segmentation_index:])
 
         
-        for i in range(last_segmentation_index, len(state)): #evita de pegar a palavra inteira
+        for i in range(last_segmentation_index + 1, len(state) + 1):
             word_to_be_tested = state[last_segmentation_index: i]
-            candidate_cost = self.unigramCost(word_to_be_tested)
+            candidate_cost = self.unigramCost(word_to_be_tested) #normalmente o primeiro corte possivel vai ser melhor. Como contornar isso?
             if(candidate_cost < minimal_cost):
                 minimal_cost = candidate_cost
-                valid_actions.append(i)
+                valid_actions.append(str(i))
         print('Ações possiveis: ', valid_actions)
         return valid_actions
 
     def nextState(self, state, action):
+        action = int(action)
         """ Metodo que implementa funcao de transicao """
-        return state[:action] + ' ' + state[action:]
+        return state[:action] + " " + state[action:]
     def isGoalState(self, state):
         """ Metodo que implementa teste de meta """
         possible_actions = self.actions(state) #Talvez seja custoso.
@@ -81,6 +83,7 @@ class SegmentationProblem(util.Problem):
         return len(possible_actions) == 0
 
     def stepCost(self, state, action): #aqui da pra definir o custo do estado meta como zero, inclusive. (maybe)
+        action = int(action)
         """ Metodo que implementa funcao custo """
         next_state = self.nextState(state, action)
         current_cost = self.unigramCost(state)
@@ -93,8 +96,10 @@ def segmentWords(query, unigramCost):
         return ''
     problem = SegmentationProblem(query, unigramCost)
     goal_node = util.uniformCostSearch(problem)
+    print('oooo caralho, o goal_node é: {}'.format(goal_node.state))
     valid, solution = util.getSolution(goal_node, problem)
     print('Resultado: {} {} valid? {}'.format(query, solution, valid))
+    print('mas que pora')
     return goal_node.state
      
     # BEGIN_YOUR_CODE 
