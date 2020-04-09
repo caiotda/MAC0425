@@ -42,47 +42,47 @@ class SegmentationProblem(util.Problem):
     def isState(self, state):
         """ Metodo que implementa verificacao de estado """
         return len(state) >= len(self.query)
-        # raise NotImplementedError
 
     def initialState(self):
         """ Metodo que implementa retorno da posicao inicial """
         print('O estado inicial é: {}'.format(self.query))
         return self.query
 
+    def _get_words_cost(self, state):
+        words = state.split(' ')
+        cost = 0
+        for word in words:
+            cost += self.unigramCost(word)
+        return cost
+
+    def _split(self, word, index, separator):
+        return word[:index] + separator + word[index:]
+
     def actions(self, state): #problema: ele ta considerando espaços em branco como validos e ta inserindo espaço neles
         """ Metodo que implementa retorno da lista de acoes validas
         para um determinado estado
         """
         valid_actions = []
-        print('Estado que chegou: {}'.format(state))
-        last_segmentation_index = state.rfind(' ')
-        if(last_segmentation_index == -1): # Nenhuma segmentação encontrada.
-            last_segmentation_index = 0
-        else:
-            last_segmentation_index += 1
-        minimal_cost = self.unigramCost(state[last_segmentation_index:])
+        min_sentence_cost = self._get_words_cost(state)
 
-        
-        for i in range(last_segmentation_index + 1, len(state) + 1):
-            word_to_be_tested = state[last_segmentation_index: i]
-            candidate_cost = self.unigramCost(word_to_be_tested) #normalmente o primeiro corte possivel vai ser melhor. Como contornar isso?
-            if(candidate_cost < minimal_cost):
-                minimal_cost = candidate_cost
+        for i in range(0, len(state) + 1):
+            test_word = self._split(state, i, ' ')
+            possible_sentence_cost = self._get_words_cost(test_word)
+            if(possible_sentence_cost < min_sentence_cost):
+                min_sentence_cost = possible_sentence_cost
                 valid_actions.append(str(i))
-        print('Ações possiveis: ', valid_actions)
         return valid_actions
 
     def nextState(self, state, action):
         action = int(action)
         """ Metodo que implementa funcao de transicao """
-        return state[:action] + " " + state[action:]
+        return self._split(state, action, ' ')
     def isGoalState(self, state):
         """ Metodo que implementa teste de meta """
         possible_actions = self.actions(state) #Talvez seja custoso.
-        print('Ações possiveis: {}'.format(len(possible_actions)))
         return len(possible_actions) == 0
 
-    def stepCost(self, state, action): #aqui da pra definir o custo do estado meta como zero, inclusive. (maybe)
+    def stepCost(self, state, action):
         action = int(action)
         """ Metodo que implementa funcao custo """
         next_state = self.nextState(state, action)
@@ -96,10 +96,8 @@ def segmentWords(query, unigramCost):
         return ''
     problem = SegmentationProblem(query, unigramCost)
     goal_node = util.uniformCostSearch(problem)
-    print('oooo caralho, o goal_node é: {}'.format(goal_node.state))
     valid, solution = util.getSolution(goal_node, problem)
-    print('Resultado: {} {} valid? {}'.format(query, solution, valid))
-    print('mas que pora')
+    print('Query:{}, Solução:{} valida?{} goal_node:{}'.format(query, solution, valid, goal_node.state))
     return goal_node.state
      
     # BEGIN_YOUR_CODE 
