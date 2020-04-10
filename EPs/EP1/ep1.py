@@ -48,30 +48,29 @@ class SegmentationProblem(util.Problem):
         print('O estado inicial é: {}'.format(self.query))
         return self.query
 
-    def _get_words_cost(self, state):
+    def _get_avg_sentence_cost(self, state):
         words = state.split(' ')
         cost = 0
         for word in words:
             cost += self.unigramCost(word)
-        return cost
+        return cost/len(words)
 
     def _split(self, word, index, separator):
         return word[:index] + separator + word[index:]
 
-    def actions(self, state): #problema: ele ta considerando espaços em branco como validos e ta inserindo espaço neles
+    def actions(self, state): 
         """ Metodo que implementa retorno da lista de acoes validas
         para um determinado estado
         """
         valid_actions = []
-        min_sentence_cost = self._get_words_cost(state)
+        min_sentence_cost = self._get_avg_sentence_cost(state)
 
         for i in range(1, len(state)):
             test_word = self._split(state, i, ' ')
-            possible_sentence_cost = self._get_words_cost(test_word)
+            possible_sentence_cost = self._get_avg_sentence_cost(test_word)
             if(possible_sentence_cost < min_sentence_cost):
                 min_sentence_cost = possible_sentence_cost
                 valid_actions.append(str(i))
-            print('Palavra atual:{}, custo dela:{}, acoes possiveis:{}, custo minimo: {}'.format(test_word, possible_sentence_cost, valid_actions, min_sentence_cost))
         return valid_actions
 
     def nextState(self, state, action):
