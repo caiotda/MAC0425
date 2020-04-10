@@ -65,12 +65,13 @@ class SegmentationProblem(util.Problem):
         valid_actions = []
         min_sentence_cost = self._get_words_cost(state)
 
-        for i in range(0, len(state) + 1):
+        for i in range(1, len(state)):
             test_word = self._split(state, i, ' ')
             possible_sentence_cost = self._get_words_cost(test_word)
             if(possible_sentence_cost < min_sentence_cost):
                 min_sentence_cost = possible_sentence_cost
                 valid_actions.append(str(i))
+            print('Palavra atual:{}, custo dela:{}, acoes possiveis:{}, custo minimo: {}'.format(test_word, possible_sentence_cost, valid_actions, min_sentence_cost))
         return valid_actions
 
     def nextState(self, state, action):
