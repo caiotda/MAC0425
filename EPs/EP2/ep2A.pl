@@ -3,7 +3,6 @@
 
 lista_para_conjunto(Xs, Cs) :- 
     lista_para_conjunto_helper(Xs, [], Result),
-    Cs is Result.
     
 lista_para_conjunto_helper([], Cs, Cs).
 
