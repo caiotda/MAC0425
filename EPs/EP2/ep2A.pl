@@ -1,10 +1,20 @@
 %%%%% Insira aqui os seus predicados.
 %%%%% Use quantos predicados auxiliares julgar necess�rio
 
-lista_para_conjunto(Xs,Cs) :-
-    lista_para_conjunto_helper(Xs, [], Cs).
+lista_para_conjunto(Xs, Cs) :- 
+    lista_para_conjunto_helper(Xs, [], Result),
+    Cs is Result.
+    
+lista_para_conjunto_helper([], Cs, Cs).
 
-lista_para_conjunto_helper(_, _, _) :- true.
+lista_para_conjunto_helper([Xs|Xt], H, _) :-
+    not(member(Xs, H)),
+    append(H, [Xs], Res),
+    lista_para_conjunto_helper(Xt, Res, _).
+
+lista_para_conjunto_helper([Xs|Xt], H, _) :-
+    member(Xs, H),
+    lista_para_conjunto_helper(Xt, H, _).
 
 
 %%%%%%%% Fim dos predicados adicionados
