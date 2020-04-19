@@ -36,15 +36,9 @@ mesmo_conjunto_helper([H|T], Cs) :-
     mesmo_conjunto_helper(T, Cs).
 %------------------------- Exercício 3 ------------------------------%
 uniao_conjunto(Cs, Ls, Res) :-
-    uniao_conjunto_helper(Cs, Ls, [], Res).
-
-uniao_conjunto_helper([], Ls, Acc, Res) :-
-    append(Acc, Ls, NewAcc),
-    Res = NewAcc.
-
-uniao_conjunto_helper([Ch|Ct], Ls, Acc, Res) :-
-    append(Acc, [Ch], NewAcc),
-    uniao_conjunto_helper(Ct, Ls, NewAcc, Res).
+    append(Cs, Ls, Lista),
+    lista_para_conjunto(Lista, Conjunto),
+    Res = Conjunto.
 
 %------------------------- Exercício 4 ------------------------------%
 
