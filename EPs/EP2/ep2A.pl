@@ -1,4 +1,8 @@
 %%%%% Insira aqui os seus predicados.
+
+%% OBS: Criei o predicado list_same_length inspirado nessa thread do Stack overflow:
+%% https://stackoverflow.com/questions/13111591/prolog-check-if-two-lists-have-the-same-elements
+%% Pois estava tendo problemas, no exercício 2, para checar se os conjuntos eram compatíveis.
 %%%%% Use quantos predicados auxiliares julgar necess�rio
 
 %------------------------- Exercício 1 ------------------------------%
@@ -31,6 +35,38 @@ mesmo_conjunto_helper([H|T], Cs) :-
     member(H, Cs),
     mesmo_conjunto_helper(T, Cs).
 %------------------------- Exercício 3 ------------------------------%
+uniao_conjunto(Cs, Ls, Res) :-
+    uniao_conjunto_helper(Cs, Ls, [], Res).
+
+uniao_conjunto_helper([], Ls, Acc, Res) :-
+    append(Acc, Ls, NewAcc),
+    Res = NewAcc.
+
+uniao_conjunto_helper([Ch|Ct], Ls, Acc, Res) :-
+    append(Acc, [Ch], NewAcc),
+    uniao_conjunto_helper(Ct, Ls, NewAcc, Res).
+
+%------------------------- Exercício 4 - incompleto. Percebi que tava fazendo o quatro enquanto 
+% resolvia 3, então vou deixar o WIP aqui ------------------------------%
+inter_conjunto([], Ds, Ds).
+inter_conjunto(Cs, [], Cs).
+
+inter_conjunto(Cs, Ds, Res) :-
+    inter_conjunto_helper(Cs, Ds, Res). %aqui sim vou descascar os elementos
+
+inter_conjunto_helper([Ch| Ct], [_|Dt], Res) :-
+    member(Ch, Dt),
+    append(Res, [Ch], NewRes),
+    inter_conjunto_helper(Ct, Dt, NewRes).
+
+inter_conjunto_helper([_|Ct], [Dh|Dt], Res) :-
+    member(Dh, Ct),
+    append(Res, [Dh], NewRes),
+    inter_conjunto_helper(Ct, Dt, NewRes).
+
+inter_conjunto_helper([_|Ct], [_|Dt], Res) :- % não achei intersecção entre os elementos atuais,
+                                              % segue em frente então.
+    inter_conjunto_helper(Ct, Dt, Res).
 %%%%%%%% Fim dos predicados adicionados
 %%%%%%%% Os testes come�am aqui.
 %%%%%%%% Para executar os testes, use a consulta:   ?- run_tests.
