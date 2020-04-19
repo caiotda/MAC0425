@@ -1,6 +1,7 @@
 %%%%% Insira aqui os seus predicados.
 %%%%% Use quantos predicados auxiliares julgar necess�rio
 
+%------------------------- Exercício 1 ------------------------------%
 lista_para_conjunto(Xs, Cs) :- 
     lista_para_conjunto_helper(Xs, [], Cs).
     
@@ -15,7 +16,21 @@ lista_para_conjunto_helper([Xs|Xt], H, Cs) :-
     member(Xs, H),
     lista_para_conjunto_helper(Xt, H, Cs).
 
+%------------------------- Exercício 2 ------------------------------%
 
+list_same_length([], []).
+list_same_length([_|Xs], [_|Ys]) :-
+    list_same_length(Xs, Ys).
+
+mesmo_conjunto(Ls, Cs) :-
+    list_same_length(Ls, Cs),
+    mesmo_conjunto_helper(Ls, Cs).
+
+mesmo_conjunto_helper([], _).
+mesmo_conjunto_helper([H|T], Cs) :-
+    member(H, Cs),
+    mesmo_conjunto_helper(T, Cs).
+%------------------------- Exercício 3 ------------------------------%
 %%%%%%%% Fim dos predicados adicionados
 %%%%%%%% Os testes come�am aqui.
 %%%%%%%% Para executar os testes, use a consulta:   ?- run_tests.
