@@ -76,6 +76,21 @@ inter_conjunto_helper([H|T], Ls, Acc, Res) :-
 
 %------------------------- Exercício 5 ------------------------------%
 
+diferenca_conjunto(Cs, Ds, Es) :-
+    diferenca_conjunto_helper(Cs, Ds, [], Es).
+
+diferenca_conjunto_helper([], _, Acc, Acc).
+
+diferenca_conjunto_helper([Ch|Ct], Ds, Acc, Es) :-
+    not(member(Ch, Ds)),
+    append(Acc, [Ch], NewAcc),
+    diferenca_conjunto_helper(Ct, Ds, NewAcc, Es).
+
+diferenca_conjunto_helper([Ch|Ct], Ds, Acc, Es) :-
+    member(Ch, Ds),
+    diferenca_conjunto_helper(Ct, Ds, Acc, Es).
+
+%--------------------------------------------------------------------%
 
 %%%%%%%% Fim dos predicados adicionados
 %%%%%%%% Os testes come�am aqui.
