@@ -1,8 +1,16 @@
 %%%%% Insira aqui os seus predicados.
 
+
+%% Nome: Caio Túlio de Deus Andrade
+%% NUSP: 9797232
+
 %% OBS: Criei o predicado list_same_length inspirado nessa thread do Stack overflow:
 %% https://stackoverflow.com/questions/13111591/prolog-check-if-two-lists-have-the-same-elements
 %% Pois estava tendo problemas, no exercício 2, para checar se os conjuntos eram compatíveis.
+
+%% Escrevi esse arquivo usando a extensão .pl pois meu sistema não reconhecia a extensão .pro
+%% Entreguei em .pro porque é o pedido na atividade, mas fica o aviso caso dê problema.
+
 %%%%% Use quantos predicados auxiliares julgar necess�rio
 
 %------------------------- Exercício 1 ------------------------------%
