@@ -126,7 +126,67 @@ U_{i+1}(s) \leftarrow R(s) + \gamma max_{a \in A(s)} \sum_{s'}P(s'|s, a)U_i(s')
 $$
 
 
-Repetiremos essa atualização até que o erro absoluto entre U(s) e U'(s) for menor que um epsilon.
+Repetiremos essa atualização até que o erro absoluto entre U(s) e U'(s) for menor que um epsilon. O algoritmo é descrito pelo pseudocódigo:
 
-## Iteração de políticas
+```
+funcao ITERAÇÃO-VALORS(mdp, epsilon): funçao-utilidade
+inicialize U' e U como 0.
+{
+	repita{
+		U <- U'; delta <- 0
+		for each state s in S do {
+			U'[s] <- R(s) + gamma*
+				max(
+					soma(P(s'|s,a)*U[s'], s' in (s, a) )
+				,a in A(s))
+			if |U'[s] - U[s]| > delta {
+				delta <- |U'[s] - U[s]|
+			}
+		}
+	} até que delta < epsilon * (1 - gamma)/gamma
+retorne U
+}
+```
 
+Note como fazemos a atualização por camadas de instante de tempo: cada estado no instante t do meu mundo é atualizado de maneira concorrente, utilizando os estados vizinhos no instante t-1. Assim, não existe uma "seção crítica" na qual usamos um estado, digamos (1,1) para atualizar o estado (1,2), mas logo em seguida vamos atualizar o estado (1,2) e corremos o risco de usar o valor atualizado armazenado em (1,1). Mas isso não ocorre porque as atualizações são sempre feitas baseadas num instante passado de tempo.
+
+Um bom exercício é simular o algoritmo de iteração de valor. Teste com o seguinte grid world:
+
+
+
+| 0    | 0    | 0    | +1   |
+| ---- | ---- | ---- | ---- |
+| 0    | x    | 0    | -1   |
+| 0    | 0    | 0    | 0    |
+
+Aqui inicializamos todos estados com recompensa 0, exceto um objetivo marcado como +1 e um poço marcado como -1. Tomando gamma = 0.9, e uma função de transição tal que mover-se para frente tem uma probabilidade de 0,8 e uma chacne de 0,1 para cair para direita e 0,1 de cair para a esquerda, atualize sua crença de mundo: 
+
+
+
+| 0    | 0    | ?    | +1   |
+| ---- | ---- | ---- | ---- |
+| 0    | x    | 0    | -1   |
+| 0    | 0    | 0    | 0    |
+
+Vamos atualizar a utilidade do estado U1(0,2) (isto é, a utilidade de (0,2) no instante 1):
+$$
+U_1(0,2) = R((0,2)) + \gamma *max(\sum_{s'}P(s'|(0,2),a) * U_0((0,2)))
+\\
+\therefore
+\\
+U_1(0,2) =0 + \gamma *max(0.8 * 1 + 0 * 0,1 + 0*0.1 (direita),
+\\ 0.8 * 0 + 0.1*1 \ (baixo), 
+\\0.8 * 0 + 0.1 * 0 \ (esquerda)
+)
+\\
+\therefore
+\\
+U_1(0,2) = 0.9*0.8 = 0.72
+$$
+
+| 0    | 0    | 0.72 | +1   |
+| ---- | ---- | ---- | ---- |
+| 0    | x    | 0    | -1   |
+| 0    | 0    | 0    | 0    |
+
+Agora repita para o instante t = 2. Note como a utilidade vai se propagando dos valores inicialmente conhecidos para valores que não conheciamos inicialmente e chutamos um valor (no caso, chutamos 0). A gente repete isso até que a diferença entre iterações seja muito pequena.
