@@ -37,7 +37,7 @@ import util
 # **            PART 01 Modeling BlackJack                **
 # **********************************************************
 
-
+DETERMINISTIC = 1
 class BlackjackMDP(util.MDP):
     """
     The BlackjackMDP class is a subclass of MDP that models the BlackJack game as a MDP
@@ -53,6 +53,7 @@ class BlackjackMDP(util.MDP):
         self.multiplicidade = multiplicidade
         self.limiar = limiar
         self.custo_espiada = custo_espiada
+        self.total_de_cartas = len(valores_cartas)
 
     def startState(self):
         """
@@ -85,6 +86,18 @@ class BlackjackMDP(util.MDP):
             sorteio = random.randint(0, len(baralho) - 1)
         return sorteio
 
+    def set_state_as_terminal(self, state):
+        if type(state) is tuple:
+            state = list(state)
+        state[2] = None
+        return tuple(state)
+
+    def is_end_state(self, state):
+        return state[2] == None
+
+    def is_double_peeking(self, state, action):
+        return state[1] != None and action == 'Espiar'
+
     def succAndProbReward(self, state, action):
         """
         Given a |state| and |action|, return a list of (new_state, prob, reward) tuples
@@ -97,56 +110,72 @@ class BlackjackMDP(util.MDP):
            don't include that state in the list returned by succAndProbReward.
         """
         # BEGIN_YOUR_CODE
-        # TODO: precisa retornar uma lista de estados possíveis, não pra sortear um deles hihi
 
-
-        if state[2] == None or (action == 'Espiar' and state[1] != None): #Estados terminais
+        if self.is_end_state(state) or self.is_double_peeking(state, 'Espiar'):
             return []
-        
+
         new_state = list(state[:])
 
+        reward_so_far = state[0] ## Faz sentido esse nome?
+        peek_card = state[1]
+        deck = state[2]
+
         if action == 'Sair':
-            reward = new_state[0]
-            new_state[2] = None # Estado terminal
-            new_state = tuple(new_state)
-            return [(new_state, 1, reward)]
+            new_state = self.set_state_as_terminal(new_state)
+            return [(new_state, DETERMINISTIC, reward_so_far)]
 
         if action == 'Espiar':
-            carta_sorteada = self.sorteia_carta(state[2])
+            carta_sorteada = self.sorteia_carta(peek_card) #Aqui ta errado. Tem que considerar todos estados futuros.
             new_state[1] = carta_sorteada
             new_state = tuple(new_state)
-            return [(new_state, 1, -self.custo_espiada)] ## TODO: aqui é  -1 mesmo, ou é +1. Quase ctz que é -1?
+            return [(new_state, DETERMINISTIC, -self.custo_espiada)]
 
         if action == 'Pegar':
-            if state[1] != None:
-                carta_sorteada = state[1]
-                baralho = list(state[2])
-                baralho[carta_sorteada] -= 1
+            if peek_card != None:
+                deck[peek_card] -= 1
 
-                if baralho[carta_sorteada] == 0:
-                    del self.cartas_sorteaveis[carta_sorteada]
+                if deck[peek_card] == 0:
+                    self.total_de_cartas -= 1
 
-                valor_mao = new_state[0] + self.valores_cartas[carta_sorteada]
+                valor_mao = reward_so_far + self.valores_cartas[peek_card]
 
                 if valor_mao > self.limiar:
                     new_state[2] = None
 
                 new_state[0] = valor_mao
                 new_state = tuple(new_state)
-                return [(new_state, 1, 0)]
+                return [(new_state, DETERMINISTIC, 0)]
             else:
-"""                 next_states = []
+                next_states = []
+                ammount_of_discarded_cards = 0
+                isDeckEmpty = True
+                reward = 0
                 for i in range(len(self.valores_cartas)):
-                    # Construir o estado
-                    # Construir a probabilidade
-                    # Colocar 0 como custo
+                    deck = state[2]
 
-                    # Preciso do indice da carta pra reduzir a multiplicidade no new_state.
-                    if state[3][i] != 0:
+                    # Construção do novo estado
+                    if deck[i] != 0: # Carta está disponível
+                        isDeckEmpty = False
+                        deck = list(deck)
+                        deck[i] = deck[i] - 1 # Reduz a quantidade da carta disponível
+                        if deck[i] == 0:
+                            ammount_of_discarded_cards += 1
                         new_state[0] += state[0] + self.valores_cartas[i]
                         new_state[1] = None
-                        new_state[3][i] = new_state[3][i] - 1
-                    pass """
+                        new_state[2] = deck
+
+                        #Construir a probabilidade
+                        if self.total_de_cartas > 0:
+                            probability = 1/self.total_de_cartas
+                        else:
+                            probability = 0
+                    if isDeckEmpty:
+                        new_state = self.set_state_as_terminal(new_state)
+                        reward = new_state[0]
+                    next_states.append((new_state, probability, reward))
+                self.total_de_cartas -= ammount_of_discarded_cards        
+                    
+                    
                 # Iterar por todas cartas que podem ser sorteadas.
                 # Posso criar uma lista de cartas sorteaveis e só iterar por ela.
 
