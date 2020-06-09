@@ -13,8 +13,8 @@
   ENTENDO QUE EPS SEM ASSINATURA NAO SERAO CORRIGIDOS E,
   AINDA ASSIM, PODERAO SER PUNIDOS POR DESONESTIDADE ACADEMICA.
 
-  Nome :
-  NUSP :
+  Nome : Caio Túlio de Deus Andrade
+  NUSP : 9797232
 
   Referencias: Com excecao das rotinas fornecidas no enunciado
   e em sala de aula, caso voce tenha utilizado alguma referencia,
@@ -75,9 +75,19 @@ class BlackjackMDP(util.MDP):
         """
         return ['Pegar', 'Espiar', 'Sair']
 
+    def sorteia_carta(self, baralho):
+        """
+            Método que sorteia uma carta do baralho. Garante que a carta sorteada ainda esteja 
+            presente no baralho.
+        """
+        sorteio = random.randint(0, len(baralho) - 1)
+        while baralho[sorteio] == 0:
+            sorteio = random.randint(0, len(baralho) - 1)
+        return sorteio
+
     def succAndProbReward(self, state, action):
         """
-        Given a |state| and |action|, return a list of (newState, prob, reward) tuples
+        Given a |state| and |action|, return a list of (new_state, prob, reward) tuples
         corresponding to the states reachable from |state| when taking |action|.
         A few reminders:
          * Indicate a terminal state (after quitting, busting, or running out of cards)
@@ -87,7 +97,59 @@ class BlackjackMDP(util.MDP):
            don't include that state in the list returned by succAndProbReward.
         """
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+        # TODO: precisa retornar uma lista de estados possíveis, não pra sortear um deles hihi
+
+
+        if state[2] == None or (action == 'Espiar' and state[1] != None): #Estados terminais
+            return []
+        
+        new_state = list(state[:])
+
+        if action == 'Sair':
+            reward = new_state[0]
+            new_state[2] = None # Estado terminal
+            new_state = tuple(new_state)
+            return [(new_state, 1, reward)]
+
+        if action == 'Espiar':
+            carta_sorteada = self.sorteia_carta(state[2])
+            new_state[1] = carta_sorteada
+            new_state = tuple(new_state)
+            return [(new_state, 1, -self.custo_espiada)] ## TODO: aqui é  -1 mesmo, ou é +1. Quase ctz que é -1?
+
+        if action == 'Pegar':
+            if state[1] != None:
+                carta_sorteada = state[1]
+                baralho = list(state[2])
+                baralho[carta_sorteada] -= 1
+
+                if baralho[carta_sorteada] == 0:
+                    del self.cartas_sorteaveis[carta_sorteada]
+
+                valor_mao = new_state[0] + self.valores_cartas[carta_sorteada]
+
+                if valor_mao > self.limiar:
+                    new_state[2] = None
+
+                new_state[0] = valor_mao
+                new_state = tuple(new_state)
+                return [(new_state, 1, 0)]
+            else:
+"""                 next_states = []
+                for i in range(len(self.valores_cartas)):
+                    # Construir o estado
+                    # Construir a probabilidade
+                    # Colocar 0 como custo
+
+                    # Preciso do indice da carta pra reduzir a multiplicidade no new_state.
+                    if state[3][i] != 0:
+                        new_state[0] += state[0] + self.valores_cartas[i]
+                        new_state[1] = None
+                        new_state[3][i] = new_state[3][i] - 1
+                    pass """
+                # Iterar por todas cartas que podem ser sorteadas.
+                # Posso criar uma lista de cartas sorteaveis e só iterar por ela.
+
         # END_YOUR_CODE
 
     def discount(self):
@@ -118,8 +180,8 @@ class ValueIteration(util.MDPAlgorithm):
         mdp.computeStates()
         def computeQ(mdp, V, state, action):
             # Return Q(state, action) based on V(state).
-            return sum(prob * (reward + mdp.discount() * V[newState]) \
-                            for newState, prob, reward in mdp.succAndProbReward(state, action))
+            return sum(prob * (reward + mdp.discount() * V[new_state]) \
+                            for new_state, prob, reward in mdp.succAndProbReward(state, action))
 
         def computeOptimalPolicy(mdp, V):
             # Return the optimal policy given the values V.
@@ -202,7 +264,7 @@ class QLearningAlgorithm(util.RLAlgorithm):
         """
         return 1.0 / math.sqrt(self.numIters)
 
-    def incorporateFeedback(self, state, action, reward, newState):
+    def incorporateFeedback(self, state, action, reward, new_state):
         """
          We will call this function with (s, a, r, s'), which you should use to update |weights|.
          You should update the weights using self.getStepSize(); use
