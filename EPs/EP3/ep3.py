@@ -38,6 +38,7 @@ import util
 # **********************************************************
 
 DETERMINISTIC = 1
+TERMINAL_STATE = None
 class BlackjackMDP(util.MDP):
     """
     The BlackjackMDP class is a subclass of MDP that models the BlackJack game as a MDP
@@ -98,6 +99,22 @@ class BlackjackMDP(util.MDP):
     def is_double_peeking(self, state, action):
         return state[1] != None and action == 'Espiar'
 
+    def user_won(self):
+        return self.total_de_cartas == 0
+
+    def user_busted(self, hand):
+        return hand > self.limiar
+    def set_state(self, state, hand, peek, deck):
+        if type(state) is tuple:
+            state = list(state)
+        state[0] = hand
+        state[1] = peek
+        if type(deck) is list:
+            deck = tuple(deck)
+        state[2] = deck
+        state = tuple(state)
+        return state
+
     def succAndProbReward(self, state, action):
         """
         Given a |state| and |action|, return a list of (new_state, prob, reward) tuples
@@ -114,15 +131,16 @@ class BlackjackMDP(util.MDP):
         if self.is_end_state(state) or self.is_double_peeking(state, action):
             return []
 
-        new_state = list(state[:])
 
-        reward_so_far = state[0] ## Faz sentido esse nome?
+        next_state = list(state[:])
+
+        hand = state[0]
         peek_card = state[1]
         deck = list(state[2])
 
         if action == 'Sair':
-            new_state = self.set_state_as_terminal(new_state)
-            return [(new_state, DETERMINISTIC, reward_so_far)]
+            next_state = self.set_state_as_terminal(next_state)
+            return [(next_state, DETERMINISTIC, hand)]
 
         if action == 'Espiar':
             # Iterar por todas cartas que podem ser espiadas
@@ -130,59 +148,55 @@ class BlackjackMDP(util.MDP):
             for i in range(len(self.valores_cartas)):
                 if deck[i] != 0:
                     # Analisar apenas cartas disponíveis
-                    new_state[1] = i
-                    if self.total_de_cartas > 0:
-                        probability = 1/self.total_de_cartas
-                    else:
-                        probability = 0
-                    next_states.append(( new_state, probability, -self.custo_espiada))
+                    peek = i
+                    next_state = self.set_state(next_state, hand, peek, deck)
+                    probability = deck[i]/self.total_de_cartas
+                    next_states.append(( next_state, probability, -self.custo_espiada))
             return next_states
         if action == 'Pegar':
+            if self.user_won():
+                ## Jogador venceu, não existem mais cartas
+                next_state = self.set_state_as_terminal(next_state)
+                return [(next_state, DETERMINISTIC, hand)]
+            next_states = []
             if peek_card != None:
                 deck[peek_card] -= 1
 
                 if deck[peek_card] == 0:
                     self.total_de_cartas -= 1
 
-                valor_mao = reward_so_far + self.valores_cartas[peek_card]
+                hand += self.valores_cartas[peek_card]
 
-                if valor_mao > self.limiar:
-                    new_state[2] = None
+                next_state = self.set_state(next_state, hand, None, deck)
 
-                new_state[0] = valor_mao
-                new_state = tuple(new_state)
-                return [(new_state, DETERMINISTIC, 0)]
+                if self.user_busted(hand):
+                    next_state = self.set_state_as_terminal(next_state)
+
+                next_states = [(next_state, DETERMINISTIC, 0)]
             else:
-                next_states = []
-                ammount_of_discarded_cards = 0
-                isDeckEmpty = True
-                reward = 0
+
                 for i in range(len(self.valores_cartas)):
+                    next_deck = deck[:]
+                    # Construção do proximo deck após remover uma carta
+                    if deck[i] > 0: 
+                        # Carta está disponível
+                        next_deck[i] = deck[i] - 1 
+                        # Reduz a multiplicidade da carta para o próximo turno
+                        hand += self.valores_cartas[i]
+                        peek = None
 
-                    # Construção do novo estado
-                    if deck[i] != 0: # Carta está disponível
-                        is_deck_empty = False
-                        deck[i] = deck[i] - 1 # Reduz a quantidade da carta disponível
-                        if deck[i] == 0:
-                            ammount_of_discarded_cards += 1
-                        new_state[0] += self.valores_cartas[i]
-                        new_state[1] = None
-                        new_state[2] = deck
+                        next_state = self.set_state(next_state, hand, peek, next_deck)
+                        if self.user_busted(hand):
+                            next_state = self.set_state_as_terminal(next_state)
+                        
 
-                        #Construir a probabilidade
-                        if self.total_de_cartas > 0:
-                            probability = 1/self.total_de_cartas
-                        else:
-                            probability = 0
-                    if isDeckEmpty: # Não cobre o caso de eu chegar num estado terminal. Isso só vai acontecer quanto eu já estiver num estado terminal
-                        new_state = self.set_state_as_terminal(new_state)
-                        reward = new_state[0]
-                    next_states.append((new_state, probability, reward))
-                self.total_de_cartas -= ammount_of_discarded_cards        
-                    
+                        #Construir a probabilidade considerando a multiplicadade da carta.
+                        probability = deck[i]/self.total_de_cartas
+
+                        next_states.append((next_state, probability, 0))
+                self.total_de_cartas -= 1        
+                
             return next_states
-                # Iterar por todas cartas que podem ser sorteadas.
-                # Posso criar uma lista de cartas sorteaveis e só iterar por ela.
 
         # END_YOUR_CODE
 
