@@ -111,14 +111,14 @@ class BlackjackMDP(util.MDP):
         """
         # BEGIN_YOUR_CODE
 
-        if self.is_end_state(state) or self.is_double_peeking(state, 'Espiar'):
+        if self.is_end_state(state) or self.is_double_peeking(state, action):
             return []
 
         new_state = list(state[:])
 
         reward_so_far = state[0] ## Faz sentido esse nome?
         peek_card = state[1]
-        deck = state[2]
+        deck = list(state[2])
 
         if action == 'Sair':
             new_state = self.set_state_as_terminal(new_state)
@@ -151,16 +151,14 @@ class BlackjackMDP(util.MDP):
                 isDeckEmpty = True
                 reward = 0
                 for i in range(len(self.valores_cartas)):
-                    deck = state[2]
 
                     # Construção do novo estado
                     if deck[i] != 0: # Carta está disponível
-                        isDeckEmpty = False
-                        deck = list(deck)
+                        is_deck_empty = False
                         deck[i] = deck[i] - 1 # Reduz a quantidade da carta disponível
                         if deck[i] == 0:
                             ammount_of_discarded_cards += 1
-                        new_state[0] += state[0] + self.valores_cartas[i]
+                        new_state[0] += self.valores_cartas[i]
                         new_state[1] = None
                         new_state[2] = deck
 
