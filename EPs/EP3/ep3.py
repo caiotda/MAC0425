@@ -135,7 +135,8 @@ class BlackjackMDP(util.MDP):
                         probability = 1/self.total_de_cartas
                     else:
                         probability = 0
-                    next_states.append(( new_state, probability, 0))
+                    next_states.append(( new_state, probability, -self.custo_espiada))
+            return next_states
         if action == 'Pegar':
             if peek_card != None:
                 deck[peek_card] -= 1
@@ -179,7 +180,7 @@ class BlackjackMDP(util.MDP):
                     next_states.append((new_state, probability, reward))
                 self.total_de_cartas -= ammount_of_discarded_cards        
                     
-                    
+            return next_states
                 # Iterar por todas cartas que podem ser sorteadas.
                 # Posso criar uma lista de cartas sorteaveis e só iterar por ela.
 
