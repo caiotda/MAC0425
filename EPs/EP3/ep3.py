@@ -125,11 +125,17 @@ class BlackjackMDP(util.MDP):
             return [(new_state, DETERMINISTIC, reward_so_far)]
 
         if action == 'Espiar':
-            carta_sorteada = self.sorteia_carta(peek_card) #Aqui ta errado. Tem que considerar todos estados futuros.
-            new_state[1] = carta_sorteada
-            new_state = tuple(new_state)
-            return [(new_state, DETERMINISTIC, -self.custo_espiada)]
-
+            # Iterar por todas cartas que podem ser espiadas
+            next_states = []
+            for i in range(len(self.valores_cartas)):
+                if deck[i] != 0:
+                    # Analisar apenas cartas disponíveis
+                    new_state[1] = i
+                    if self.total_de_cartas > 0:
+                        probability = 1/self.total_de_cartas
+                    else:
+                        probability = 0
+                    next_states.append(( new_state, probability, 0))
         if action == 'Pegar':
             if peek_card != None:
                 deck[peek_card] -= 1
