@@ -169,7 +169,7 @@ class BlackjackMDP(util.MDP):
                             probability = 1/self.total_de_cartas
                         else:
                             probability = 0
-                    if isDeckEmpty:
+                    if isDeckEmpty: # Não cobre o caso de eu chegar num estado terminal. Isso só vai acontecer quanto eu já estiver num estado terminal
                         new_state = self.set_state_as_terminal(new_state)
                         reward = new_state[0]
                     next_states.append((new_state, probability, reward))
