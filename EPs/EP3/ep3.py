@@ -337,3 +337,20 @@ def blackjackFeatureExtractor(state, action):
     # BEGIN_YOUR_CODE
     raise Exception("Not implemented yet")
     # END_YOUR_CODE
+
+
+def main():
+        mdp = BlackjackMDP(valores_cartas=[1, 5], multiplicidade=2, limiar=15, custo_espiada=1)
+
+        state = (0, 1, (2, 2))
+        action = 'Pegar'
+        result = mdp.succAndProbReward(state, action)
+        print(result)
+         
+
+        state = (11, None, (1,0))
+        action = 'Pegar'
+        result = mdp.succAndProbReward(state, action)
+        print(result)
+
+main()
