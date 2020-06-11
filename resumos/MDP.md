@@ -14,7 +14,7 @@
 
 * Não iremos apensar usar probabilidades para pesar decisões, mas também usar funções de **utilidade**, fornecendo recompensas ao gente
 
-  * Ex.: o que é melhor? Chegar no aeroporto com antecedência de 5 dias e chance de eprder seu voo de 0.1% ou chegar 4 horas antes com chande de perder o voo de 5%? A teoria utilitarista serve como contrapeso à probabilidade
+  * Ex.: o que é melhor? Chegar no aeroporto com antecedência de 5 dias e chance de perder seu voo de 0.1% ou chegar 4 horas antes com chande de perder o voo de 5%? A teoria utilitarista serve como contrapeso à probabilidade
 
 * Assim, vamos associar uma recompensa R(s) a cada estado s. Pode ser positiva ou negativa
 
@@ -33,7 +33,7 @@
 
 ### Utilidades ao longo do tempo
 
-Primeiramente, vamos definir a utilidade (também chamado de varlo V) de um histórico no ambiente com n estados como 
+Primeiramente, vamos definir a utilidade (também chamado de valor V) de um histórico no ambiente com n estados como 
 $$
 U_h([s_0, s_1, \dots,s_n])
 $$
@@ -43,9 +43,9 @@ Devemos responder algumas questões antes de definir nosso modelo de utilidade:
 
 1. **O horizonte é finito?** Isto é, nosso "jogo" tem fim? Se isso for verdadeiro, nada mais importa depois de um estado N final. Portanto: 
    $$
-   U_h([s_0, s_1, \dots,s_n + k]) = U_h([s_0, s_1, \dots,s_n])
+   U_h([s_0, s_1, \dots,s_n, \dots ,s_{n + k}]) = U_h([s_0, s_1, \dots,s_n])
    $$
-   Se o horizonte é finito, dizemos que nossa política é não estacionária: se nosso N for pequeno, podemos ter uma política e se N for grande, podemos ter outra política (ou seja, o plano de ação para um mesmo estado, dependendo do N, pode mudar)
+   Se o horizonte é finito, dizemos que nossa política é não estacionária: se nosso N for pequeno, podemos ter uma política e se N for grande podemos ter outra política (ou seja, o plano de ação para um mesmo estado, dependendo do N, pode mudar)
 
    Se o horizonte for infinito, dizemos que nossa política é estacionária: independente do n, independente do tempo, a ação para um estado qualquer será sempre o mesmo, a ação ótima depende apenas do estado atual. Note que esse segundo caso é bem mais simples
 
@@ -60,7 +60,7 @@ Devemos responder algumas questões antes de definir nosso modelo de utilidade:
       $$
       U_h([s_0, s_1, \dots,s_n]) = R(s_0) + \gamma R(s_1) + \gamma ^2R(s_2) + \dots
       $$
-      Onde gama é o fator de desconto, um número entre 0 e 1. Note que a potencia no gamma faz o agente valorizar mais recompensas próximas do que distantes. Vamos usar essa abordagem.
+      Onde gama é o fator de desconto, **um número entre 0 e 1**. Note que a potencia no gamma faz o agente valorizar mais recompensas próximas do que distantes.
 
 Note que temos um problema: se um ambiente não tiver estado final ou se o agente não atinge o estado final, então os históricos dos ambientes seriam infinitamente longos e, consequentemente, as utilidades seriam infinitas. Para esse problema, temos 3 soluções:
 
@@ -75,11 +75,11 @@ Sendo R max a recompensa maxima possivel
 2. Se for garantido que o ambiente possui um estado final e o agente chega nele eventualmente, obviamente não vai ser infinito. Políticas que garantem que o agente chegue ao estado final são chamadas de **adequadas**. Com esse tipo de política, podemos tranquilamente usarmos gamma = 1, porque o valor da soma com certeza será finito.
 3. Podemos medir a **recompensa média por passo de tempo**. Assim, mesmo que tenhamos uma sequência infinita, ainda teriamos recompensas medias finitas
 
-Com todas essas observações, vamos adotar recompensas descontadas como abordagem por evitar melhor o problema de historicos infinitos.
+Com todas essas observações, **vamos adotar recompensas descontadas** na nossa modelagem por evitar melhor o problema de historicos infinitos.
 
 ### Políticas ótimas e a utilidade dos estados.
 
-Queremos comparar políticas usando a utilidade esperada obtida ao executar essas políticas. Para tanto, vamos assumir que o agente está num estado inicial s e defir uma variável aleatório St para ser o estado do agente num instante t executando uma política pi. A utilidade esperada para executar pi começando em s é dada por:
+Queremos comparar políticas usando a utilidade esperada obtida ao executar essas políticas. Para tanto, vamos assumir que o agente está num estado inicial s e defir uma variável aleatório $S_t$ para ser o estado do agente num instante t executando uma política $\pi$. A utilidade esperada para executar $\pi$ começando em s é dada por:
 $$
 U^{\pi}(s) = E[\sum_{t=0}^{\infty}\gamma^tR(S_t)]
 $$
@@ -95,7 +95,7 @@ Ou seja, é a utilidade partindo de s seguindo a política ótima. Vamos simples
 
 
 
-A função de utilidade U(s) permite ao agente selecionar ações usando o principio de **maximização de utilidade esperada**, isto é, escolher a ação que maximiza a utilidade esperada do estado subsequente:
+A função de utilidade U(s) permite ao agente selecionar ações usando o principio de **maximização de utilidade esperada**, isto é, escolher a ação que maximiza a utilidade esperada do estado subsequente. Por isso, pdoemos reescrever A utilidade de um estado como o produto entre o modelo de transição dele para um estado subsequente s' pela utilidade do estado subsequente, isto é:
 $$
 \pi^*(s) = argmax_{a \in A(s)} \sum_{s'}P(s'|s,a)U(s')
 $$
@@ -111,10 +111,12 @@ $$
 
 
 
-Segue das definições anteriores um relacionamento interessante entre estado atual e proximos estados: **a utilidade de um estado é a recomensa de estar nele, mas a utilidade descontada de estar no proximo estado, assumindo que o agente toma a ação ótima**. Então a utilidade no estado s é :
+Segue das definições anteriores um relacionamento interessante entre estado atual e proximos estados: **a utilidade de um estado é a recomensa de estar nele, mais a utilidade descontada de estar no proximo estado, assumindo que o agente toma a ação ótima**. Então a utilidade no estado s é :
 $$
 U(s) = R(s) + \gamma max_{a \in A(s)} \sum_{s'}P(s'|s, a)U(s')
 $$
+
+Essa equação é chamada de **equação de Bellman**.
 
 ### O algoritmo de iteração de valores
 
@@ -126,21 +128,20 @@ U_{i+1}(s) \leftarrow R(s) + \gamma max_{a \in A(s)} \sum_{s'}P(s'|s, a)U_i(s')
 $$
 
 
-Repetiremos essa atualização até que o erro absoluto entre U(s) e U'(s) for menor que um epsilon. O algoritmo é descrito pelo pseudocódigo:
+
+Repetiremos essa atualização até que o erro absoluto entre U(s) e U'(s) for menor que um epsilon. A atualização de Bellman é utilizada no **algortimo de iteração de valores**, descrito a seguir:
 
 ```
 funcao ITERAÇÃO-VALORS(mdp, epsilon): funçao-utilidade
 inicialize U' e U como 0.
 {
 	repita{
-		U <- U'; delta <- 0
+		U <- vetor_de_zeros(); delta <- 0
 		for each state s in S do {
-			U'[s] <- R(s) + gamma*
-				max(
-					soma(P(s'|s,a)*U[s'], s' in (s, a) )
-				,a in A(s))
-			if |U'[s] - U[s]| > delta {
-				delta <- |U'[s] - U[s]|
+			U' <- R(s) + gamma*
+				max( soma(P(s'|s,a)*U[s'], s' in (s, a) ) ,a in A(s))
+			if |U' - U[s]| > delta {
+				delta <- |U' - U[s]|
 			}
 		}
 	} até que delta < epsilon * (1 - gamma)/gamma
@@ -149,6 +150,8 @@ retorne U
 ```
 
 Note como fazemos a atualização por camadas de instante de tempo: cada estado no instante t do meu mundo é atualizado de maneira concorrente, utilizando os estados vizinhos no instante t-1. Assim, não existe uma "seção crítica" na qual usamos um estado, digamos (1,1) para atualizar o estado (1,2), mas logo em seguida vamos atualizar o estado (1,2) e corremos o risco de usar o valor atualizado armazenado em (1,1). Mas isso não ocorre porque as atualizações são sempre feitas baseadas num instante passado de tempo.
+
+Esse é o método **assíncrono** de atualização de velor, no qual olhamos para um estado de cada vez. Existe um outro método síncrono no qual atualizamos a utilidade olhando para todos os estados ao mesmo tempo. O método assíncrono converge mais rápido e ocupa menos memória (note que aqui só armazenamos um vetor de utilidades e uma variável auxiliar u' para armazenar o u[s] antes da atualização. No método síncrono, precisariamos de um vetor para armazenar a utilidade atual e a próxima utilidade).
 
 Um bom exercício é simular o algoritmo de iteração de valor. Teste com o seguinte grid world:
 
@@ -189,4 +192,4 @@ $$
 | 0    | x    | 0    | -1   |
 | 0    | 0    | 0    | 0    |
 
-Agora repita para o instante t = 2. Note como a utilidade vai se propagando dos valores inicialmente conhecidos para valores que não conheciamos inicialmente e chutamos um valor (no caso, chutamos 0). A gente repete isso até que a diferença entre iterações seja muito pequena.
+##### Agora repita para o instante t = 2. Note como a utilidade vai se propagando dos valores inicialmente conhecidos para valores que não conheciamos inicialmente e chutamos um valor (no caso, chutamos 0). A gente repete isso até que a diferença entre iterações seja muito pequena.
