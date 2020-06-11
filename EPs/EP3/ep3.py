@@ -76,16 +76,6 @@ class BlackjackMDP(util.MDP):
         """
         return ['Pegar', 'Espiar', 'Sair']
 
-    def sorteia_carta(self, baralho):
-        """
-            Método que sorteia uma carta do baralho. Garante que a carta sorteada ainda esteja 
-            presente no baralho.
-        """
-        sorteio = random.randint(0, len(baralho) - 1)
-        while baralho[sorteio] == 0:
-            sorteio = random.randint(0, len(baralho) - 1)
-        return sorteio
-
     def set_state_as_terminal(self, state):
         if type(state) is tuple:
             state = list(state)
