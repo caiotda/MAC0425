@@ -144,10 +144,6 @@ class BlackjackMDP(util.MDP):
                     next_states.append(( next_state, probability, -self.custo_espiada))
             return next_states
         if action == 'Pegar':
-            if self.user_won(total_de_cartas):
-                ## Jogador venceu, não existem mais cartas
-                next_state = self.set_state_as_terminal(next_state)
-                return [(next_state, DETERMINISTIC, hand)]
             next_states = []
             if peek_card != None:
                 deck[peek_card] -= 1
@@ -184,7 +180,11 @@ class BlackjackMDP(util.MDP):
                         probability = deck[i]/total_de_cartas
 
                         next_states.append((next_state, probability, 0))
-                total_de_cartas -= 1        
+                total_de_cartas -= 1    
+            if self.user_won(total_de_cartas):
+                ## Jogador venceu, não existem mais cartas
+                next_state = self.set_state_as_terminal(next_state)
+                return [(next_state, DETERMINISTIC, hand)]    
                 
             return next_states
 
@@ -342,15 +342,15 @@ def blackjackFeatureExtractor(state, action):
 def main():
         mdp = BlackjackMDP(valores_cartas=[1, 5], multiplicidade=2, limiar=15, custo_espiada=1)
 
-        state = (0, 1, (2, 2))
-        action = 'Pegar'
-        result = mdp.succAndProbReward(state, action)
-        print(result)
-         
 
         state = (11, None, (1,0))
         action = 'Pegar'
         result = mdp.succAndProbReward(state, action)
         print(result)
 
+        state = (0, 1, (2, 2))
+        action = 'Pegar'
+        result = mdp.succAndProbReward(state, action)
+        print(result)
+         
 main()
