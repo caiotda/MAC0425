@@ -54,7 +54,6 @@ class BlackjackMDP(util.MDP):
         self.multiplicidade = multiplicidade
         self.limiar = limiar
         self.custo_espiada = custo_espiada
-        self.total_de_cartas = len(valores_cartas)
 
     def startState(self):
         """
@@ -99,8 +98,8 @@ class BlackjackMDP(util.MDP):
     def is_double_peeking(self, state, action):
         return state[1] != None and action == 'Espiar'
 
-    def user_won(self):
-        return self.total_de_cartas == 0
+    def user_won(self, total_de_cartas):
+        return total_de_cartas == 0
 
     def user_busted(self, hand):
         return hand > self.limiar
@@ -127,10 +126,8 @@ class BlackjackMDP(util.MDP):
            don't include that state in the list returned by succAndProbReward.
         """
         # BEGIN_YOUR_CODE
-
         if self.is_end_state(state) or self.is_double_peeking(state, action):
             return []
-
 
         next_state = list(state[:])
 
@@ -138,6 +135,9 @@ class BlackjackMDP(util.MDP):
         peek_card = state[1]
         deck = list(state[2])
 
+        total_de_cartas = 0
+        for carta in deck:
+            total_de_cartas += carta
         if action == 'Sair':
             next_state = self.set_state_as_terminal(next_state)
             return [(next_state, DETERMINISTIC, hand)]
@@ -150,11 +150,11 @@ class BlackjackMDP(util.MDP):
                     # Analisar apenas cartas disponíveis
                     peek = i
                     next_state = self.set_state(next_state, hand, peek, deck)
-                    probability = deck[i]/self.total_de_cartas
+                    probability = deck[i]/total_de_cartas
                     next_states.append(( next_state, probability, -self.custo_espiada))
             return next_states
         if action == 'Pegar':
-            if self.user_won():
+            if self.user_won(total_de_cartas):
                 ## Jogador venceu, não existem mais cartas
                 next_state = self.set_state_as_terminal(next_state)
                 return [(next_state, DETERMINISTIC, hand)]
@@ -163,7 +163,7 @@ class BlackjackMDP(util.MDP):
                 deck[peek_card] -= 1
 
                 if deck[peek_card] == 0:
-                    self.total_de_cartas -= 1
+                    total_de_cartas -= 1
 
                 hand += self.valores_cartas[peek_card]
 
@@ -191,10 +191,10 @@ class BlackjackMDP(util.MDP):
                         
 
                         #Construir a probabilidade considerando a multiplicadade da carta.
-                        probability = deck[i]/self.total_de_cartas
+                        probability = deck[i]/total_de_cartas
 
                         next_states.append((next_state, probability, 0))
-                self.total_de_cartas -= 1        
+                total_de_cartas -= 1        
                 
             return next_states
 
@@ -205,7 +205,6 @@ class BlackjackMDP(util.MDP):
         Return the descount  that is 1
         """
         return 1
-
 # **********************************************************
 # **                    PART 02 Value Iteration           **
 # **********************************************************
