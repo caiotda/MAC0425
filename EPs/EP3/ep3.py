@@ -129,7 +129,7 @@ class BlackjackMDP(util.MDP):
         for carta in deck:
             total_de_cartas += carta
         if action == 'Sair':
-            next_state = self.set_state_as_terminal(next_state)
+            next_state = self.set_state(next_state, hand, None, None)
             return [(next_state, DETERMINISTIC, hand)]
 
         if action == 'Espiar':
@@ -158,7 +158,9 @@ class BlackjackMDP(util.MDP):
                 if self.user_busted(hand):
                     next_state = self.set_state_as_terminal(next_state)
 
-                next_states = [(next_state, DETERMINISTIC, 0)]
+                next_states = [(next_state, DETERMINISTIC, 0)] # Aqui tem um problema: Se op usuário venceu, eu montei um estado
+                # a mais aqui. Eu poderia checar se o usuario venceu aqui também. Poderia crair uma função que cria o proximo estado?
+                # Não sei, é algo a se pensar
             else:
 
                 for i in range(len(self.valores_cartas)):
