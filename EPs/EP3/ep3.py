@@ -164,29 +164,35 @@ class BlackjackMDP(util.MDP):
             else:
 
                 for i in range(len(self.valores_cartas)):
+                    # Constroi cada next_state possivel
                     next_deck = deck[:]
-                    # Construção do proximo deck após remover uma carta
+                    hand = state[0]
+                    reward = 0
+
                     if deck[i] > 0: 
                         # Carta está disponível
-                        next_deck[i] = deck[i] - 1 
+                        next_deck[i] = deck[i] - 1
+                        probability = deck[i]/total_de_cartas
+                        total_de_cartas -= 1
                         # Reduz a multiplicidade da carta para o próximo turno
+                        print('batata')
+                        print('valores_cartas[{}]: {}'.format(i, self.valores_cartas[i]))
                         hand += self.valores_cartas[i]
-                        peek = None
 
-                        next_state = self.set_state(next_state, hand, peek, next_deck)
                         if self.user_busted(hand):
                             next_state = self.set_state_as_terminal(next_state)
+                        if self.user_won(total_de_cartas):
+                            ## Jogador venceu, não existem mais cartas
+                            next_state = self.set_state_as_terminal(next_state)
+                            next_deck = None
+                            reward = hand
+                        next_state = self.set_state(next_state, hand, None, next_deck)
                         
 
                         #Construir a probabilidade considerando a multiplicadade da carta.
-                        probability = deck[i]/total_de_cartas
 
-                        next_states.append((next_state, probability, 0))
-                total_de_cartas -= 1    
-            if self.user_won(total_de_cartas):
-                ## Jogador venceu, não existem mais cartas
-                next_state = self.set_state_as_terminal(next_state)
-                return [(next_state, DETERMINISTIC, hand)]    
+                        next_states.append((next_state, probability, reward))
+    
                 
             return next_states
 
@@ -231,7 +237,22 @@ class ValueIteration(util.MDPAlgorithm):
         V = defaultdict(float)  # state -> value of state
         # Implement the main loop of Asynchronous Value Iteration Here:
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+
+        for state in mdp.states:
+            V[state] = 0.
+        
+        while True:
+            # Eu uso o MDP.discount aqui?
+            # Rode enquanto não converge
+            new_v = {}
+            for state in mdp.states:
+                if mdp.is_end_state(state):
+                    new_v[state] = 0.
+                else:
+                    new_v[state] = max(computeQ(mdp, new_v, state, action) for action in mdp.actions(state))
+            if max(abs(new_v[state] - V[state]) for state in mdp.states < 1e-10):
+                break
+            V = new_v
         # END_YOUR_CODE
 
         # Extract the optimal policy now
@@ -342,17 +363,32 @@ def blackjackFeatureExtractor(state, action):
 
 
 def main():
-        mdp = BlackjackMDP(valores_cartas=[1, 5], multiplicidade=2, limiar=15, custo_espiada=1)
+        smallMDP = BlackjackMDP(valores_cartas=[1, 5], multiplicidade=2, limiar=15, custo_espiada=1)
+        preEmptyState = (11, None, (1,0))
+        print('Começando os testes da Parte 1...')
 
 
-        state = (11, None, (1,0))
-        action = 'Pegar'
-        result = mdp.succAndProbReward(state, action)
-        print(result)
+        tests = [
+            ([((12, None, None), 1, 12)], smallMDP, preEmptyState, 'Pegar', 
+            'Puxa a última carta do baralho e não estoura'),
+            ([((5, None, (2, 1)), 1, 0)], smallMDP, (0, 1, (2, 2)), 'Pegar',
+            'Espia corretamente a carta declarada'),
 
-        state = (0, 1, (2, 2))
-        action = 'Pegar'
-        result = mdp.succAndProbReward(state, action)
-        print(result)
-         
+            ([
+                ((2, None, (0,2)), 1/3, 0), #Puxou a carta de valor 1
+                ((6, None, (1,1)), 2/3, 0), #Puxou a carta de valor 5
+            ], smallMDP, (1, None, (1, 2)), 'Pegar', 'Retorna 2 estados futuros com probabilidades definidas')
+        ]
+        results = 0
+        for goal, mdp, state, action, suite  in tests:
+            print('Começando o teste: {}'.format(suite))
+            result = mdp.succAndProbReward(state, action)
+            if goal == result:
+                print('PASS')
+                results += 1
+            else:
+                print('FAIL no teste {}'.format(suite))
+                print('Expected: {}, received: {}'.format(goal, result))
+        print('Bateria de testes concluida. {}/{} testes aprovados'.format(results, len(tests)))
+
 main()
