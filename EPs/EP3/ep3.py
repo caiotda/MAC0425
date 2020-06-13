@@ -146,31 +146,31 @@ class BlackjackMDP(util.MDP):
         if action == 'Pegar':
             next_states = []
             next_deck = list(deck[:])
+            reward = 0
             if peek_card != None:
                 next_deck[peek_card] -= 1
 
-                if deck[peek_card] == 0:
+                if next_deck[peek_card] == 0:
                     total_de_cartas -= 1
 
                 hand += self.valores_cartas[peek_card]
 
 
                 if self.user_busted(hand):
-                    next_state = self.set_state_as_terminal(next_state)
+                    next_deck = None
                 if self.user_won(total_de_cartas):
                             next_state = self.set_state_as_terminal(next_state)
                             next_deck = None
                             reward = hand
 
                 next_state = self.set_state(next_state, hand, None, next_deck)
-                next_states = [(next_state, DETERMINISTIC, 0)]
+                next_states = [(next_state, DETERMINISTIC, reward)]
             else:
                 for i in range(len(self.valores_cartas)):
                     # Constroi cada next_state possivel
                     # Invariante: A cada iteração, temos que resetar a mão, recompensa e total de cartas
                     novo_total_de_cartas = total_de_cartas
                     hand = state[0]
-                    reward = 0
                     next_deck = list(deck[:])
 
                     if deck[i] > 0: 
@@ -182,7 +182,7 @@ class BlackjackMDP(util.MDP):
                         hand += self.valores_cartas[i]
 
                         if self.user_busted(hand):
-                            next_state = self.set_state_as_terminal(next_state)
+                            next_deck = None
                         if self.user_won(novo_total_de_cartas):
                             ## Jogador venceu, não existem mais cartas
                             next_state = self.set_state_as_terminal(next_state)
