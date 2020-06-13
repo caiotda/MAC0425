@@ -128,11 +128,11 @@ class BlackjackMDP(util.MDP):
         total_de_cartas = 0
         for carta in deck:
             total_de_cartas += carta
-        if action == 'Sair': #Check. Correto
+        if action == 'Sair':
             next_state = self.set_state(next_state, hand, None, None)
             return [(next_state, DETERMINISTIC, hand)]
 
-        if action == 'Espiar': #Check. Me parece correto
+        if action == 'Espiar':
             # Iterar por todas cartas que podem ser espiadas
             next_states = []
             for i in range(len(self.valores_cartas)):
@@ -237,21 +237,23 @@ class ValueIteration(util.MDPAlgorithm):
         # Implement the main loop of Asynchronous Value Iteration Here:
         # BEGIN_YOUR_CODE
 
+        new_v = defaultdict()
         for state in mdp.states:
             V[state] = 0.
+            new_v[state] = 0.
         
         while True:
             # Eu uso o MDP.discount aqui?
             # Rode enquanto não converge
-            new_v = {}
             for state in mdp.states:
                 if mdp.is_end_state(state):
-                    new_v[state] = 0.
+                    V[state] = 0.
                 else:
-                    new_v[state] = max(computeQ(mdp, new_v, state, action) for action in mdp.actions(state))
-            if max(abs(new_v[state] - V[state]) for state in mdp.states < 1e-10):
+                    V[state] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
+            if max(abs(new_v[state] - V[state]) for state in mdp.states) < 1e-10:
+                print('ow caralho')
                 break
-            V = new_v
+            new_v = V
         # END_YOUR_CODE
 
         # Extract the optimal policy now
