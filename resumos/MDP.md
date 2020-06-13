@@ -77,34 +77,83 @@ Sendo R max a recompensa maxima possivel
 
 Com todas essas observações, **vamos adotar recompensas descontadas** na nossa modelagem por evitar melhor o problema de historicos infinitos.
 
-### Políticas ótimas e a utilidade dos estados.
+### Definições e utilidade dos estados.
 
 Queremos comparar políticas usando a utilidade esperada obtida ao executar essas políticas. Para tanto, vamos assumir que o agente está num estado inicial s e defir uma variável aleatório $S_t$ para ser o estado do agente num instante t executando uma política $\pi$. A utilidade esperada para executar $\pi$ começando em s é dada por:
 $$
-U^{\pi}(s) = E[\sum_{t=0}^{\infty}\gamma^tR(S_t)]
+V_\pi(s) = U^{\pi}(s) = E[\sum_{t=0}^{\infty}\gamma^tR(S_t)]
 $$
+Onde V é o valor do caminho (é simplesmente a utilidade esperada). 
+
+O que V faz é contabilizar a utilidade **esperada** partindo de s, isso considera todos estados futuros possíveis. Quando estamos em s, podemos tomar diversas ações, quem vai determinar essa escolha é a política.Como ações são não determinísticas, quando tomamos uma ação chegamos a um estado intermediário, chamado de **chance node**.
+
+
+
+Estado S -> ação tomada definida pela política $\pi$ -> chance state (s,a) -> Probabilidade de 1 - x % -> Estado sucessor s'
+																							|
+
+​																							|
+
+​																							----- Probabilidade de x% -> Outro estado sucessor s'
+
+ O estado normal determina quais ações podem ser escolhidas, quando escolhemos uma ação, chegamos a um chance node - representado por (s,a), o estado s' que sucede s é não determinístico. Por isso é útil definirmos uma função, a função " Q" :
+$$
+Q(s,a)
+$$
+É o valor esperado partindo de s **e tomando uma ação a**. Isso vai ser útil pra facilitar umas contas mais para frente. 
+
+Agora falta relacionar esses termos. Vamos definir V(s) como:
+$$
+V_\pi(s)  = 0 \ se \ s \ é \ estado\ final 
+\\
+V_\pi(s) = Q_\pi(s,a) \ do \ contrario
+$$
+Ok, e Q(s,a)? Pela definição, Q é uma função que avalia a utilidade de s se ele tomar a ação a, ou seja, Vamos definir como:
+$$
+Q\pi(s, a) = \sum_{s'} T(s, a, s') * (R(s') + \gamma V_ \pi(s'))
+$$
+Em outras palavras, a utilidade dos possíveis estados sucessores ponderada pela probabilidade de transição.
+
+
+
+### Avaliação de políticas
+
+Se temos uma política $\pi$ e queremos avaliar qual será o valor em cada estado, podemos rodar o algoritmo de avaliação de politicas:
+
+```python
+def policy_evaluation(pi, mdp, t_max):
+    v = {}
+    for state in mdp.states():
+        v[state] = 0
+    for time in range(len(t_max)):
+        for state in mdp.states():
+            v[state] = q(state, action) #pega essa ação de alguma forma
+    return v
+```
+
+
+
+### Valores ótimos
+
+
+
+Mas e se quisermos escolher o vlaor ótimo para um estado? é muito simples na verdade:
+$$
+V_{opt}(s)  = 0 \ se \ s \ é \ estado\ final 
+\\
+V_{opt}(s) = max_{a \in actions}Q(s,a) \ do \ contrario
+$$
+Ou seja, o valor ótimo dá a melhor ação possivel pro Q(S,a)
+
 Queremos uma política ótima pi estrela definida como:
-$$
-\pi^*_s = argmax_\pi U^\pi(s)
-$$
-Ou seja, é a política que maximiza a utilidade. Um fato interessante é que a política ótima independe do seu estado inicial. Asim, podemos dizer que a utilidade de um estado é 
-$$
-U^{\pi^*}(s)
-$$
-Ou seja, é a utilidade partindo de s seguindo a política ótima. Vamos simplesmente escrever isso como U(s). Note a diferença entre R(s) e U(s): R(s) é a recompensa de simplesmente estar em s. U(s) é a recompensa que teremos partindo de s e seguindo a política ótima.
 
+### Política ótima
 
-
-A função de utilidade U(s) permite ao agente selecionar ações usando o principio de **maximização de utilidade esperada**, isto é, escolher a ação que maximiza a utilidade esperada do estado subsequente. Por isso, pdoemos reescrever A utilidade de um estado como o produto entre o modelo de transição dele para um estado subsequente s' pela utilidade do estado subsequente, isto é:
+E a política ótima segue trivialmente dai:
 $$
-\pi^*(s) = argmax_{a \in A(s)} \sum_{s'}P(s'|s,a)U(s')
+\pi^*_s = argmax_{a \in actions} Q_{opt}(s,a)
 $$
-Onde 
-$$
-P(s'|s,a)
-$$
-É a função de transição.
-
+Ou seja, é a politica que tem argumentos tal que a ação escolhida pra função Q é sempre maximo. 
 ## Iteração de valores
 
 ## A equação de Bellman para utilidades
@@ -154,6 +203,30 @@ Note como fazemos a atualização por camadas de instante de tempo: cada estado 
 Esse é o método **assíncrono** de atualização de velor, no qual olhamos para um estado de cada vez. Existe um outro método síncrono no qual atualizamos a utilidade olhando para todos os estados ao mesmo tempo. O método assíncrono converge mais rápido e ocupa menos memória (note que aqui só armazenamos um vetor de utilidades e uma variável auxiliar u' para armazenar o u[s] antes da atualização. No método síncrono, precisariamos de um vetor para armazenar a utilidade atual e a próxima utilidade).
 
 Um bom exercício é simular o algoritmo de iteração de valor. Teste com o seguinte grid world:
+
+
+
+Um outro método de implementação inicializa a recomepnsa dos estados iniciais como 0 e usa a função Q(s, a) pra facilitar a conta:
+
+```python
+def valueIteration(mdp):
+    V = {}
+    for state in mdp.states():
+        V[state] = 0
+    def Q(s,a):
+        return sum(prob * (reward + mdp.discount()*V[new_state])) \
+    		for newState, prob, reward in mdp.sucessor(state, action)
+        
+    while True:
+        new_v = {}
+        for state in mdp.states():
+            if mdp.isEdState(state):
+                new_v[state] = 0
+            else:
+                new_v[state] = max(Q(state, action) for action in mdp.actions(state))
+```
+
+
 
 
 
