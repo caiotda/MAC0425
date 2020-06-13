@@ -360,37 +360,3 @@ def blackjackFeatureExtractor(state, action):
     raise Exception("Not implemented yet")
     # END_YOUR_CODE
 
-
-def main():
-        smallMDP = BlackjackMDP(valores_cartas=[1, 5], multiplicidade=2, limiar=15, custo_espiada=1)
-        preEmptyState = (11, None, (1,0))
-        print('Começando os testes da Parte 1...')
-
-
-        tests = [
-            ([((12, None, None), 1, 12)], smallMDP, preEmptyState, 'Pegar', 
-            'Puxa a última carta do baralho e não estoura'),
-            ([((5, None, (2, 1)), 1, 0)], smallMDP, (0, 1, (2, 2)), 'Pegar',
-            'Espia corretamente a carta declarada'),
-
-            ([
-                ((2, None, (0,2)), 1/3, 0), #Puxou a carta de valor 1
-                ((6, None, (1,1)), 2/3, 0), #Puxou a carta de valor 5
-            ], smallMDP, (1, None, (1, 2)), 'Pegar', 'Retorna 2 estados futuros com probabilidades definidas')
-        ]
-
-
-        # Precisa testar se ele vence quando ele puxa uma carta do peek e vence
-        results = 0
-        for goal, mdp, state, action, suite  in tests:
-            print('Começando o teste: {}'.format(suite))
-            result = mdp.succAndProbReward(state, action)
-            if goal == result:
-                print('PASS')
-                results += 1
-            else:
-                print('FAIL no teste {}'.format(suite))
-                print('Expected: {}, \nreceived: {}'.format(goal, result))
-        print('Bateria de testes concluida. {}/{} testes aprovados'.format(results, len(tests)))
-
-main()
