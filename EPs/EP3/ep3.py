@@ -128,11 +128,11 @@ class BlackjackMDP(util.MDP):
         total_de_cartas = 0
         for carta in deck:
             total_de_cartas += carta
-        if action == 'Sair':
+        if action == 'Sair': #Check. Correto
             next_state = self.set_state(next_state, hand, None, None)
             return [(next_state, DETERMINISTIC, hand)]
 
-        if action == 'Espiar':
+        if action == 'Espiar': #Check. Me parece correto
             # Iterar por todas cartas que podem ser espiadas
             next_states = []
             for i in range(len(self.valores_cartas)):
@@ -153,14 +153,16 @@ class BlackjackMDP(util.MDP):
 
                 hand += self.valores_cartas[peek_card]
 
-                next_state = self.set_state(next_state, hand, None, deck)
 
                 if self.user_busted(hand):
                     next_state = self.set_state_as_terminal(next_state)
+                if self.user_won(total_de_cartas):
+                            next_state = self.set_state_as_terminal(next_state)
+                            next_deck = None
+                            reward = hand
 
-                next_states = [(next_state, DETERMINISTIC, 0)] # Aqui tem um problema: Se op usuário venceu, eu montei um estado
-                # a mais aqui. Eu poderia checar se o usuario venceu aqui também. Poderia crair uma função que cria o proximo estado?
-                # Não sei, é algo a se pensar
+                next_state = self.set_state(next_state, hand, None, deck)
+                next_states = [(next_state, DETERMINISTIC, 0)]
             else:
 
                 for i in range(len(self.valores_cartas)):
@@ -381,6 +383,9 @@ def main():
                 ((6, None, (1,1)), 2/3, 0), #Puxou a carta de valor 5
             ], smallMDP, (1, None, (1, 2)), 'Pegar', 'Retorna 2 estados futuros com probabilidades definidas')
         ]
+
+
+        # Precisa testar se ele vence quando ele puxa uma carta do peek e vence
         results = 0
         for goal, mdp, state, action, suite  in tests:
             print('Começando o teste: {}'.format(suite))
@@ -390,7 +395,7 @@ def main():
                 results += 1
             else:
                 print('FAIL no teste {}'.format(suite))
-                print('Expected: {}, received: {}'.format(goal, result))
+                print('Expected: {}, \nreceived: {}'.format(goal, result))
         print('Bateria de testes concluida. {}/{} testes aprovados'.format(results, len(tests)))
 
 main()
