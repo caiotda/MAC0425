@@ -168,6 +168,9 @@ class BlackjackMDP(util.MDP):
                     next_deck = deck[:]
                     hand = state[0]
                     reward = 0
+                    total_de_cartas = 0
+                    for carta in deck:
+                        total_de_cartas += carta
 
                     if deck[i] > 0: 
                         # Carta está disponível
@@ -175,8 +178,7 @@ class BlackjackMDP(util.MDP):
                         probability = deck[i]/total_de_cartas
                         total_de_cartas -= 1
                         # Reduz a multiplicidade da carta para o próximo turno
-                        print('batata')
-                        print('valores_cartas[{}]: {}'.format(i, self.valores_cartas[i]))
+
                         hand += self.valores_cartas[i]
 
                         if self.user_busted(hand):
