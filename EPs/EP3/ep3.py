@@ -123,7 +123,7 @@ class BlackjackMDP(util.MDP):
 
         hand = state[0]
         peek_card = state[1]
-        deck = list(state[2])
+        deck = state[2]
 
         total_de_cartas = 0
         for carta in deck:
@@ -145,8 +145,9 @@ class BlackjackMDP(util.MDP):
             return next_states
         if action == 'Pegar':
             next_states = []
+            next_deck = list(deck[:])
             if peek_card != None:
-                deck[peek_card] -= 1
+                next_deck[peek_card] -= 1
 
                 if deck[peek_card] == 0:
                     total_de_cartas -= 1
@@ -161,39 +162,33 @@ class BlackjackMDP(util.MDP):
                             next_deck = None
                             reward = hand
 
-                next_state = self.set_state(next_state, hand, None, deck)
+                next_state = self.set_state(next_state, hand, None, next_deck)
                 next_states = [(next_state, DETERMINISTIC, 0)]
             else:
-
                 for i in range(len(self.valores_cartas)):
                     # Constroi cada next_state possivel
-                    next_deck = deck[:]
+                    # Invariante: A cada iteração, temos que resetar a mão, recompensa e total de cartas
+                    novo_total_de_cartas = total_de_cartas
                     hand = state[0]
                     reward = 0
-                    total_de_cartas = 0
-                    for carta in deck:
-                        total_de_cartas += carta
+                    next_deck = list(deck[:])
 
                     if deck[i] > 0: 
                         # Carta está disponível
                         next_deck[i] = deck[i] - 1
                         probability = deck[i]/total_de_cartas
-                        total_de_cartas -= 1
-                        # Reduz a multiplicidade da carta para o próximo turno
+                        novo_total_de_cartas -= 1
 
                         hand += self.valores_cartas[i]
 
                         if self.user_busted(hand):
                             next_state = self.set_state_as_terminal(next_state)
-                        if self.user_won(total_de_cartas):
+                        if self.user_won(novo_total_de_cartas):
                             ## Jogador venceu, não existem mais cartas
                             next_state = self.set_state_as_terminal(next_state)
                             next_deck = None
                             reward = hand
                         next_state = self.set_state(next_state, hand, None, next_deck)
-                        
-
-                        #Construir a probabilidade considerando a multiplicadade da carta.
 
                         next_states.append((next_state, probability, reward))
     
