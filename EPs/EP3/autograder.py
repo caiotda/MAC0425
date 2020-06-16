@@ -227,10 +227,10 @@ def run_tests():
         file_results.write("Part02-02 Peeking MDP:\n")
 
         
-        mdpP = geraMDPxereta()
+        mdp = geraMDPxereta()
         vi = ValueIteration()
         with Timeout(10):
-            vi.solve(mdpP)
+            vi.solve(mdp)
         total_tests_global += 1
         total_tests += 1
         f = len([a for a in vi.pi.values() if a == 'Espiar']) / float(len(vi.pi.values()))

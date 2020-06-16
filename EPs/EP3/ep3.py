@@ -243,7 +243,6 @@ class ValueIteration(util.MDPAlgorithm):
             new_v[state] = 0.
         
         while True:
-            # Eu uso o MDP.discount aqui?
             # Rode enquanto não converge
             for state in mdp.states:
                 if mdp.is_end_state(state):
@@ -251,7 +250,6 @@ class ValueIteration(util.MDPAlgorithm):
                 else:
                     V[state] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
             if max(abs(new_v[state] - V[state]) for state in mdp.states) < 1e-10:
-                print('ow caralho')
                 break
             new_v = V
         # END_YOUR_CODE
