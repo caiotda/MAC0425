@@ -169,7 +169,7 @@ Mas esse método não é tão bom por dois motivos:
 
 Com isso, surge o método alternativo do **Q-LEARNING**, no qual o agente aprende uma função ação-utilidade ao invés de aprender utilidades. A função Q(s, a) é definida por
 $$
-U(s) = max_aQ(s, a)
+V(s) = max_aQ(s, a)
 $$
 Para aprender o valor de Q(s, a) e selecionar ações, um modelo q-learning **não precisa ter conhecimento da função de transição**, da mesma forma que um agente TD. Por isso, o q-learning é um método chamado de **livre de modelo**.
 
@@ -209,3 +209,61 @@ def q_learning_agent(s, a, Q, percept, alpha):
 
 Também existe outra implementação que valoriza ações frequentemente utilizadas (e por isso, multiplica o diff pela frequencia desse par ação - estado), nessa implementação, usamos a função de exploração previamente usada no agente ADP.
 
+### Problemas com Q-learning: uma introdução ao q-learning aproximado
+
+Devido á presença da tabela Q, o algoritmo q-learning pode ocupar um espaço absurdo se o problema possuir muitos estados e muitas ações. Não somente a tabela Q ficaria gigante, a velocidade de propagação da atualização de Q seria extremamente lenta
+
+* Aproximação por função: podemos definir Q(s, a) como uma combinação de **features** multiplicada por pesos:
+  $$
+  Q(s, a) = \sum_{i}^{n} f_i(s, a)w_i
+  $$
+  Onde $f_i(s, a)$ é a feature obtida no par estado-ação $(s, a)$ e $w_i$ é um peso.
+  
+* Podemos pensar na combinação dessas features como uma mudança de base. Cada par (s, a) pode ser mapeado para uma combinação linear de features
+
+* A beleza desse método é que não precisamos armazenar diversos pares estado-ação em memória, somente ter uma função f(s, a) e atualizarmos os pesos para maximizarmos a utilidade esperada. Mas como atualizar os pesos?
+
+* Podemos definir uma regra de atualização dos pesos como:
+  $$
+  w_k^{i+1} = w_k ^i + \alpha*diff*f_k(s, a) 
+  \\
+  e
+  \\
+  diff = [R(s, a, s') + \gamma V^i(s') - Q^i(s, a)]
+  $$
+
+* Então um algoritmo para obter Q(s, a) pela aproximação linear seria algo como:
+
+ ``` 
+inicialize os pesos como 0
+inicialize o Q(s,a) como 0 para todo par ação valor
+Enquanto Q(s,a) não converge
+	w[i] += alpha * (r(s,a) + gamma * V(s)) - Q(s, a)
+	para 1...n faça:
+		q(s, a) += f[i](s, a) * w[i]
+retorne q
+	
+ ```
+
+
+
+* Lembrando que:
+  $$
+  V(s) = max_aQ(s, a)
+  $$
+
+* Com isso, dá para calcular Q de maneira linear
+
+* (obs: Dá pra obter essa fórmula fazendo descendente gradiente).
+
+### Vantagens da aproximação
+
+* Reduz o tamanho da tabela q absurdamente
+* Estados compartilham muitas features
+  * Nos permite generalizar para estados não visitados
+  * Torna as decisões mais robustas: podemos tomar decisões similares ao visitarmos estados similares
+
+### Desvantagens
+
+* Requer seleção de features (muitas vezes temos que fazer isso na mão)
+* Restringe a acuracia das recompensas aprendidas, pois a função de ercompensa pode não ser linear com suas features
