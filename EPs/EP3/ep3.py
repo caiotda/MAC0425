@@ -323,6 +323,18 @@ class QLearningAlgorithm(util.RLAlgorithm):
         """
         return 1.0 / math.sqrt(self.numIters)
 
+    def getV(self, state):
+        """
+        Finds the action that maximizes Q in a given state and returns the
+        corresponding value.
+        """
+        max_q = -math.inf
+        for action in self.actions(state):
+            Q = self.getQ(state, action)
+            if Q > max_q:
+                max_q = Q
+        return max_q
+
     def incorporateFeedback(self, state, action, reward, new_state):
         """
          We will call this function with (s, a, r, s'), which you should use to update |weights|.
@@ -332,7 +344,18 @@ class QLearningAlgorithm(util.RLAlgorithm):
          HINT: Remember to check if s is a terminal state and s' None.
         """
         # BEGIN_YOUR_CODE
-        raise Exception("Not implemented yet")
+        # TODO: Por que preciso checar se state é terminal?
+        if new_state == None:
+            V = 0 # Checar isso também. Para o finger, estado final == 0 ou reward?
+        else:
+            V = self.getV(new_state)
+        for f, _ in self.featureExtractor(state, action):
+            for i in range(self.numIters):
+                if self.weights.get(f) is None:
+                    self.weights[f] = self.getStepSize() * (reward + self.discount * V) - self.getQ(state, action)
+                else:
+                    self.weights[f] += self.getStepSize() * (reward + self.discount * V) - self.getQ(state, action)
+            
         # END_YOUR_CODE
 
 def identityFeatureExtractor(state, action):
