@@ -344,13 +344,16 @@ class QLearningAlgorithm(util.RLAlgorithm):
          HINT: Remember to check if s is a terminal state and s' None.
         """
         # BEGIN_YOUR_CODE
-        # TODO: Por que preciso checar se state é terminal?
         if new_state == None:
-            V = 0 # Checar isso também. Para o finger, estado final == 0 ou reward?
+            V = 0 # TODO: Checar isso também. Para o finger, estado final == 0 ou reward?
+        if state == None:
+            # Se estamos no estado final, não atualizaremos os pesos
+            return
         else:
             V = self.getV(new_state)
         for f, _ in self.featureExtractor(state, action):
-            for i in range(self.numIters):
+            for _ in range(self.numIters):
+                # Para cada feature, atualize o valor do peso self.numIters vezes
                 if self.weights.get(f) is None:
                     self.weights[f] = self.getStepSize() * (reward + self.discount * V) - self.getQ(state, action)
                 else:
