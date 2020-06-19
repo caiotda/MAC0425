@@ -303,7 +303,7 @@ class QLearningAlgorithm(util.RLAlgorithm):
          Return the Q function associated with the weights and features
         """
         score = 0
-        for f, v in self.featureExtractor(state, action):
+        for f, v in self.featureExtractor(state, action): # Isso não é iteravel pelo visto
             score += self.weights[f] * v
         return score
 
@@ -328,12 +328,14 @@ class QLearningAlgorithm(util.RLAlgorithm):
         Finds the action that maximizes Q in a given state and returns the
         corresponding value.
         """
-        max_q = -math.inf
+        V = -math.inf
+        print('Ações disponiveis no estado {0}: {1}'.format(state, self.actions(state)))
         for action in self.actions(state):
+            print('Com o estado {} entrei no loop'.format(state))
             Q = self.getQ(state, action)
-            if Q > max_q:
-                max_q = Q
-        return max_q
+            if Q > V:
+                V = Q
+        return V
 
     def incorporateFeedback(self, state, action, reward, new_state):
         """
@@ -344,13 +346,15 @@ class QLearningAlgorithm(util.RLAlgorithm):
          HINT: Remember to check if s is a terminal state and s' None.
         """
         # BEGIN_YOUR_CODE
-        if new_state == None:
-            V = 0 # TODO: Checar isso também. Para o finger, estado final == 0 ou reward?
         if state == None:
             # Se estamos no estado final, não atualizaremos os pesos
             return
+        if new_state == None:
+            print('new state none. Saindo')
+            V = 0
         else:
-            V = self.getV(new_state)
+            print('Com o estado {0} e new_state {1} vou tentar obter V'.format(state, new_state))
+            V = self.getV(state)
         for f, _ in self.featureExtractor(state, action):
             for _ in range(self.numIters):
                 # Para cada feature, atualize o valor do peso self.numIters vezes
@@ -377,12 +381,47 @@ largeMDP = BlackjackMDP(valores_cartas=[1, 3, 5, 8, 10], multiplicidade=3, limia
 # **        PART 03-01 Features for Q-Learning             **
 # **********************************************************
 
+def get_ammout_of_cards(deck):
+    total = 0
+    if deck is None:
+        return 0
+    for card in deck:
+        total += card
+    return total
+
+def get_card_presence_indicator(deck): 
+    result = []
+    for card in deck:
+        if card > 0:
+            result.append(1)
+        else:
+            result.append(0)
+    return tuple(result)
+        
+
 def blackjackFeatureExtractor(state, action):
     """
     You should return a list of (feature key, feature value) pairs.
     (See identityFeatureExtractor() above for a simple example.)
     """
     # BEGIN_YOUR_CODE
-    raise Exception("Not implemented yet")
+    total, peek, deck = state
+    features = []
+    if deck != None: 
+        # Exemplo 1: Feature para o total de cartas na mão do jogar 
+        value = 1
+        key = (total, action)
+        features.append((key, value))
+        # Exemplo 2: Indicador de presença/ausencia de cada carta no baralho
+
+        key = (get_card_presence_indicator(deck), action)
+        value = 1
+        features.append((key, value))
+
+        # Exemplo 3: Indicar quantidade disponível de cada carta para ação
+        for i in range(len(deck)):
+            features.append(( (i, deck[i], action), 1))
+        print(features)
+    return features
     # END_YOUR_CODE
 
