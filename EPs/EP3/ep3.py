@@ -350,11 +350,9 @@ class QLearningAlgorithm(util.RLAlgorithm):
             # Se estamos no estado final, não atualizaremos os pesos
             return
         if new_state == None:
-            print('new state none. Saindo')
             V = 0
         else:
-            print('Com o estado {0} e new_state {1} vou tentar obter V'.format(state, new_state))
-            V = self.getV(state)
+            V = self.getV(new_state)
         for f, _ in self.featureExtractor(state, action):
             for _ in range(self.numIters):
                 # Para cada feature, atualize o valor do peso self.numIters vezes
