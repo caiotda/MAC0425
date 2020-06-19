@@ -256,7 +256,6 @@ class ValueIteration(util.MDPAlgorithm):
 
         # Extract the optimal policy now
         pi = computeOptimalPolicy(mdp, V)
-        # print("ValueIteration: %d iterations" % numIters)
         self.pi = pi
         self.V = V
 
@@ -272,7 +271,7 @@ def geraMDPxereta():
     optimal action for at least 10% of the states.
     """
     # BEGIN_YOUR_CODE
-    raise Exception("Not implemented yet")
+    return BlackjackMDP(valores_cartas=[4, 7, 14], multiplicidade=2, limiar=20, custo_espiada=1)
     # END_YOUR_CODE
 
 
@@ -329,9 +328,7 @@ class QLearningAlgorithm(util.RLAlgorithm):
         corresponding value.
         """
         V = -math.inf
-        print('Ações disponiveis no estado {0}: {1}'.format(state, self.actions(state)))
         for action in self.actions(state):
-            print('Com o estado {} entrei no loop'.format(state))
             Q = self.getQ(state, action)
             if Q > V:
                 V = Q
@@ -419,7 +416,6 @@ def blackjackFeatureExtractor(state, action):
         # Exemplo 3: Indicar quantidade disponível de cada carta para ação
         for i in range(len(deck)):
             features.append(( (i, deck[i], action), 1))
-        print(features)
     return features
     # END_YOUR_CODE
 
