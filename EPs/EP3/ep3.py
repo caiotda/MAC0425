@@ -98,12 +98,12 @@ class BlackjackMDP(util.MDP):
         """
         return state[1] != None and action == 'Espiar'
 
-    def user_won(self, total_de_cartas):
+    def user_won(self, total_of_cards):
         """
         Checks if the player has won. This happens if he has drawn all cards in the deck
         and hasn't busted.
         """
-        return total_de_cartas == 0
+        return total_of_cards == 0
 
     def user_busted(self, hand):
         """
