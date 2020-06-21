@@ -77,23 +77,45 @@ class BlackjackMDP(util.MDP):
         return ['Pegar', 'Espiar', 'Sair']
 
     def set_state_as_terminal(self, state):
+        """
+            Set a state as terminal. A state is terminal if state[2] is None.
+        """
         if type(state) is tuple:
             state = list(state)
         state[2] = None
         return tuple(state)
 
     def is_end_state(self, state):
+        """
+            Checks if the given state is an end state
+        """
         return state[2] == None
 
     def is_double_peeking(self, state, action):
+        """
+            Verifies if the player is trying to peek a card two times in a row,
+            an illegal move.
+        """
         return state[1] != None and action == 'Espiar'
 
     def user_won(self, total_de_cartas):
+        """
+        Checks if the player has won. This happens if he has drawn all cards in the deck
+        and hasn't busted.
+        """
         return total_de_cartas == 0
 
     def user_busted(self, hand):
+        """
+        Checks if the players hand is larger that the limit. If that happens,
+        we say that the user has busted.
+        """
         return hand > self.limiar
     def set_state(self, state, hand, peek, deck):
+        """
+        Method that sets a state with the given parameters: the players new hand, if he will peek a
+        card or not and the ammount of each card available in the deck.
+        """
         if type(state) is tuple:
             state = list(state)
         state[0] = hand
@@ -120,27 +142,24 @@ class BlackjackMDP(util.MDP):
             return []
 
         next_state = list(state[:])
+        hand, peek_card, deck = state
 
-        hand = state[0]
-        peek_card = state[1]
-        deck = state[2]
-
-        total_de_cartas = 0
-        for carta in deck:
-            total_de_cartas += carta
+        total_of_cards = 0
+        for ammount in deck:
+            # Gets the ammount of each card in the deck
+            total_of_cards += ammount
         if action == 'Sair':
             next_state = self.set_state(next_state, hand, None, None)
             return [(next_state, DETERMINISTIC, hand)]
 
         if action == 'Espiar':
-            # Iterar por todas cartas que podem ser espiadas
             next_states = []
             for i in range(len(self.valores_cartas)):
                 if deck[i] != 0:
-                    # Analisar apenas cartas disponíveis
+                    # we'll check only cards that are on the deck
                     peek = i
                     next_state = self.set_state(next_state, hand, peek, deck)
-                    probability = deck[i]/total_de_cartas
+                    probability = deck[i]/total_of_cards
                     next_states.append(( next_state, probability, -self.custo_espiada))
             return next_states
         if action == 'Pegar':
@@ -148,17 +167,17 @@ class BlackjackMDP(util.MDP):
             next_deck = list(deck[:])
             reward = 0
             if peek_card != None:
+                # Picks the peeked card
                 next_deck[peek_card] -= 1
-
-                if next_deck[peek_card] == 0:
-                    total_de_cartas -= 1
+                total_of_cards -= 1
 
                 hand += self.valores_cartas[peek_card]
 
 
                 if self.user_busted(hand):
+                    # Sets the next deck as n
                     next_deck = None
-                if self.user_won(total_de_cartas):
+                if self.user_won(total_of_cards):
                             next_state = self.set_state_as_terminal(next_state)
                             next_deck = None
                             reward = hand
@@ -169,21 +188,21 @@ class BlackjackMDP(util.MDP):
                 for i in range(len(self.valores_cartas)):
                     # Constroi cada next_state possivel
                     # Invariante: A cada iteração, temos que resetar a mão, recompensa e total de cartas
-                    novo_total_de_cartas = total_de_cartas
+                    new_total_of_cards = total_of_cards
                     hand = state[0]
                     next_deck = list(deck[:])
 
                     if deck[i] > 0: 
                         # Carta está disponível
                         next_deck[i] = deck[i] - 1
-                        probability = deck[i]/total_de_cartas
-                        novo_total_de_cartas -= 1
+                        probability = deck[i]/total_of_cards
+                        new_total_of_cards -= 1
 
                         hand += self.valores_cartas[i]
 
                         if self.user_busted(hand):
                             next_deck = None
-                        if self.user_won(novo_total_de_cartas):
+                        if self.user_won(new_total_of_cards):
                             ## Jogador venceu, não existem mais cartas
                             next_state = self.set_state_as_terminal(next_state)
                             next_deck = None
