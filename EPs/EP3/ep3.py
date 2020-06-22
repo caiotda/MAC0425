@@ -270,15 +270,20 @@ class ValueIteration(util.MDPAlgorithm):
             new_v[state] = 0.
         
         while True:
-            # Rode enquanto não converge
+            # Iterate until the values converge
             for state in mdp.states:
                 if mdp.is_end_state(state):
-                    V[state] = 0.
+                    # The Value of an end state is 0
+                    new_v[state] = 0.
                 else:
-                    V[state] = max(computeQ(mdp, V, state, action) for action in mdp.actions(state))
+                    # On every other state, it will be the Q value of that state
+                    # with an optimal action that maximizes its Q value
+                    new_v[state] = max(computeQ(mdp, new_v, state, action) for action in mdp.actions(state))
             if max(abs(new_v[state] - V[state]) for state in mdp.states) < 1e-10:
+                # Checks for convergence
                 break
-            new_v = V
+            V = new_v
+            # Update V if value has't converged yet
         # END_YOUR_CODE
 
         # Extract the optimal policy now
@@ -354,11 +359,8 @@ class QLearningAlgorithm(util.RLAlgorithm):
         Finds the action that maximizes Q in a given state and returns the
         corresponding value.
         """
-        V = -math.inf
-        for action in self.actions(state):
-            Q = self.getQ(state, action)
-            if Q > V:
-                V = Q
+
+        V = max(self.getQ(state, action) for action in self.actions(state))
         return V
 
     def incorporateFeedback(self, state, action, reward, new_state):
@@ -371,18 +373,22 @@ class QLearningAlgorithm(util.RLAlgorithm):
         """
         # BEGIN_YOUR_CODE
         if state == None:
-            # Se estamos no estado final, não atualizaremos os pesos
+            # If the current state is terminal, no need to update the weights
             return
         if new_state == None:
+            # If the new state is terminal, the value is 0.
             V = 0
         else:
             V = self.getV(new_state)
         for f, _ in self.featureExtractor(state, action):
+            # For each feature, we'll update the weights
             for _ in range(self.numIters):
-                # Para cada feature, atualize o valor do peso self.numIters vezes
+                # Iterate self.numIters times (this is done to achieve better approximate values)
                 if self.weights.get(f) is None:
+                    # If the weight associated with feature F is not defined yet, just assign the value
                     self.weights[f] = self.getStepSize() * (reward + self.discount * V) - self.getQ(state, action)
                 else:
+                    # Otherwise, update the weight value
                     self.weights[f] += self.getStepSize() * (reward + self.discount * V) - self.getQ(state, action)
             
         # END_YOUR_CODE
