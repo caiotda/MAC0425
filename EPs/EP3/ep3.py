@@ -112,14 +112,14 @@ class BlackjackMDP(util.MDP):
         happens, we say that the user has busted.
         """
         return hand > self.limiar
-    def set_state(self, state, hand, peek, deck):
+    def set_state(self, hand, peek, deck):
         """
         Method that sets a state with the given parameters: the players
         new hand, if he will peek a card or not and the ammount of each
         card available in the deck.
         """
-        if type(state) is tuple:
-            state = list(state)
+        state = [0, 0, 0]
+        # Dummy initial state.
         state[0] = hand
         state[1] = peek
         if type(deck) is list:
@@ -152,7 +152,7 @@ class BlackjackMDP(util.MDP):
             # Gets the ammount of each card in the deck
             total_of_cards += ammount
         if action == 'Sair':
-            next_state = self.set_state(next_state, hand, None, None)
+            next_state = self.set_state(hand, None, None)
             return [(next_state, DETERMINISTIC, hand)]
 
         if action == 'Espiar':
@@ -161,7 +161,7 @@ class BlackjackMDP(util.MDP):
                 if deck[i] != 0:
                     # we'll check only cards that are on the deck
                     peek = i
-                    next_state = self.set_state(next_state, hand, peek, deck)
+                    next_state = self.set_state(hand, peek, deck)
                     probability = deck[i]/total_of_cards
                     next_states.append(( next_state, probability, -self.custo_espiada))
             return next_states
@@ -180,13 +180,13 @@ class BlackjackMDP(util.MDP):
                 if self.user_busted(hand) or self.user_won(total_of_cards):
                     # Either if the player won or busted, we need to set the
                     # state as terminal (and to make sure we set the next state
-                    # with and empty deck, we do that as well)
+                    # with and empty deck, we also set the next_deck as None)
                     next_state = self.set_state_as_terminal(next_state)
                     next_deck = None
                     if self.user_won(total_of_cards):
                         # Only if the player has won that we give him a reward
                         reward = hand
-                next_state = self.set_state(next_state, hand, None, next_deck)
+                next_state = self.set_state(hand, None, next_deck)
                 next_states = [(next_state, DETERMINISTIC, reward)]
             else:
                 for i in range(len(self.valores_cartas)):
@@ -208,14 +208,12 @@ class BlackjackMDP(util.MDP):
                         # Increment the players hand with the picked
                         # card value
 
-                        if self.user_busted(next_hand):
-                            next_deck = None
-                        if self.user_won(new_total_of_cards):
-                            ## Jogador venceu, não existem mais cartas
+                        if self.user_busted(next_hand) or self.user_won(new_total_of_cards):
                             next_state = self.set_state_as_terminal(next_state)
                             next_deck = None
-                            reward = next_hand
-                        next_state = self.set_state(next_state, next_hand, None, next_deck)
+                            if self.user_won(new_total_of_cards):
+                                reward = next_hand
+                        next_state = self.set_state( next_hand, None, next_deck)
 
                         probability = deck[i]/total_of_cards
                         # We calculate the probability that card i is 
