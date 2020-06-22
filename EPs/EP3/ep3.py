@@ -174,14 +174,15 @@ class BlackjackMDP(util.MDP):
                 hand += self.valores_cartas[peek_card]
 
 
-                if self.user_busted(hand):
-                    # Sets the next deck as n
+                if self.user_busted(hand) or self.user_won(total_of_cards):
+                    # Either if the player won or busted, we need to set the
+                    # state as terminal (and to make sure we set the next state
+                    # with and empty deck, we do that as well)
+                    next_state = self.set_state_as_terminal(next_state)
                     next_deck = None
-                if self.user_won(total_of_cards):
-                            next_state = self.set_state_as_terminal(next_state)
-                            next_deck = None
-                            reward = hand
-
+                    if self.user_won(total_of_cards):
+                        # Only if the player has won that we give him a reward
+                        reward = hand
                 next_state = self.set_state(next_state, hand, None, next_deck)
                 next_states = [(next_state, DETERMINISTIC, reward)]
             else:
