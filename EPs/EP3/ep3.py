@@ -78,7 +78,8 @@ class BlackjackMDP(util.MDP):
 
     def set_state_as_terminal(self, state):
         """
-            Set a state as terminal. A state is terminal if state[2] is None.
+        Set a state as terminal. A state is terminal if state[2] is
+        None.
         """
         if type(state) is tuple:
             state = list(state)
@@ -93,28 +94,29 @@ class BlackjackMDP(util.MDP):
 
     def is_double_peeking(self, state, action):
         """
-            Verifies if the player is trying to peek a card two times in a row,
-            an illegal move.
+            Verifies if the player is trying to peek a card two times
+            in a row, an illegal move.
         """
         return state[1] != None and action == 'Espiar'
 
     def user_won(self, total_of_cards):
         """
-        Checks if the player has won. This happens if he has drawn all cards in the deck
-        and hasn't busted.
+        Checks if the player has won. This happens if he has drawn all
+        cards in the deck and hasn't busted.
         """
         return total_of_cards == 0
 
     def user_busted(self, hand):
         """
-        Checks if the players hand is larger that the limit. If that happens,
-        we say that the user has busted.
+        Checks if the players hand is larger that the limit. If that
+        happens, we say that the user has busted.
         """
         return hand > self.limiar
     def set_state(self, state, hand, peek, deck):
         """
-        Method that sets a state with the given parameters: the players new hand, if he will peek a
-        card or not and the ammount of each card available in the deck.
+        Method that sets a state with the given parameters: the players
+        new hand, if he will peek a card or not and the ammount of each
+        card available in the deck.
         """
         if type(state) is tuple:
             state = list(state)
@@ -138,7 +140,8 @@ class BlackjackMDP(util.MDP):
            don't include that state in the list returned by succAndProbReward.
         """
         # BEGIN_YOUR_CODE
-        if self.is_end_state(state) or self.is_double_peeking(state, action):
+        if self.is_end_state(state) or \
+            self.is_double_peeking(state, action):
             return []
 
         next_state = list(state[:])
@@ -187,32 +190,38 @@ class BlackjackMDP(util.MDP):
                 next_states = [(next_state, DETERMINISTIC, reward)]
             else:
                 for i in range(len(self.valores_cartas)):
-                    # Constroi cada next_state possivel
-                    # Invariante: A cada iteração, temos que resetar a mão, recompensa e total de cartas
+                    # We'll build every next state possible. At each 
+                    # loop iteration we'll need to reset the players
+                    #  hand, the total of cards and the next deck
                     new_total_of_cards = total_of_cards
-                    hand = state[0]
+                    next_hand = hand
                     next_deck = list(deck[:])
 
                     if deck[i] > 0: 
-                        # Carta está disponível
+                        # Card is available
                         next_deck[i] = deck[i] - 1
-                        probability = deck[i]/total_of_cards
                         new_total_of_cards -= 1
+                        # Reduce the total of cards and how many times
+                        # the card 'i' appears on the deck
 
-                        hand += self.valores_cartas[i]
+                        next_hand += self.valores_cartas[i]
+                        # Increment the players hand with the picked
+                        # card value
 
-                        if self.user_busted(hand):
+                        if self.user_busted(next_hand):
                             next_deck = None
                         if self.user_won(new_total_of_cards):
                             ## Jogador venceu, não existem mais cartas
                             next_state = self.set_state_as_terminal(next_state)
                             next_deck = None
-                            reward = hand
-                        next_state = self.set_state(next_state, hand, None, next_deck)
+                            reward = next_hand
+                        next_state = self.set_state(next_state, next_hand, None, next_deck)
 
+                        probability = deck[i]/total_of_cards
+                        # We calculate the probability that card i is 
+                        # picked based of the old total_of_cards,
                         next_states.append((next_state, probability, reward))
     
-                
             return next_states
 
         # END_YOUR_CODE
