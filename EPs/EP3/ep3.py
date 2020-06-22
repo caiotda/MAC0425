@@ -409,15 +409,12 @@ largeMDP = BlackjackMDP(valores_cartas=[1, 3, 5, 8, 10], multiplicidade=3, limia
 # **        PART 03-01 Features for Q-Learning             **
 # **********************************************************
 
-def get_ammout_of_cards(deck):
-    total = 0
-    if deck is None:
-        return 0
-    for card in deck:
-        total += card
-    return total
-
-def get_card_presence_indicator(deck): 
+def get_card_presence_indicator(deck):
+    """
+    Given a deck (array of integers), returns a tuple that indicates
+    if a card is present or not on the deck.
+    Ex.: [1,2,0,3,4,0] -> (1,1,0,1,1,0)
+    """
     result = []
     for card in deck:
         if card > 0:
@@ -433,22 +430,26 @@ def blackjackFeatureExtractor(state, action):
     (See identityFeatureExtractor() above for a simple example.)
     """
     # BEGIN_YOUR_CODE
-    total, peek, deck = state
+    total, _, deck = state
     features = []
     if deck != None: 
-        # Exemplo 1: Feature para o total de cartas na mão do jogar 
+        # Feature 1: associates ammount of points of player hand with action
         value = 1
         key = (total, action)
         features.append((key, value))
-        # Exemplo 2: Indicador de presença/ausencia de cada carta no baralho
+        # feature 2: associates presence or absence of each card on deck with
+        # chosen action
 
         key = (get_card_presence_indicator(deck), action)
         value = 1
         features.append((key, value))
 
-        # Exemplo 3: Indicar quantidade disponível de cada carta para ação
+        # Other features: Associate the i-th deck with its quantity on deck and
+        # the chosen action
         for i in range(len(deck)):
-            features.append(( (i, deck[i], action), 1))
+            key = (i, deck[i], action)
+            value = 1
+            features.append((key , value))
     return features
     # END_YOUR_CODE
 
