@@ -1,100 +1,8 @@
 # Redes Neurais
 
-* Essas notas de aula foram baseadas nas aulas do Cristopher manning para o curso de NLP  - CS224, então no meio dessas notas podem existir algumas divagações em NLP, elas não são importantes para aprender redes neurais em si, mas vale a pena dar uma olhada :) 
-
-### Revisão de regressão logística Digamos que recebemos um dataset consistindo de amostras:
-
-$$
-\{x_i, y_i\}^N_{i=1}
-$$
-Os xi são chamados de **inputs** (vetor de dimensão d), enquanto que os yi são chamados de **rótulos**. Por exemplo, xi pode ser um conjunto de palavras e yi podem ser o sentimento de um texto (positivo, negativo, etc). Então o que queremos fazer aqui é classificar novos xi em categorias determinadas previamente pelos yi (lembrando que os valores de y são valores discretos, não determinísticos). Uma forma de fazer essa classificação é usando um **classificador softmax**:
-$$
-p(y|x) = \frac{exp(W_y.x)}{\sum_{c=1}^Cexp(W_c.x)}
-$$
-Onde w é a matriz de pesos e C é a quantidade de classes de classificação (redundante, mas enfim). Vamos analisar essa expressão com um pouco mais de calma:
-$$
-W_y.x = \sum_{i=1}^dW_{yi}xi = f_y
-$$
-Ou seja, o que isso signficia é: fixe a y-ésima linha da matriz W e faça um produto escalar com o vetor x. O mesmo vale para o denominador da fração.
-
-Então depois de descobrir $exp(f_y)$, a gente simplesmente normaliza esse valor pra transformar ele numa probabilidade, dividindo ele por todos os $f_c$:
-$$
-p(y|x) = \frac{exp(f_y)}{\sum_{c=1}^C exp(f_c)}
-$$
-Ou seja, essa função pega um bando de números e transforma em uma probabilidade! Isso é parecido com regressão logística, mas aqui usamos um vetor de pesos para **cada rótulo**, em regressão linear se usa menos.
-
-
-
-Para cada exemplo de treino, nosso objetivo é maximizar a probabilidade da classe correta y.
-
-Ou, podemos minimizar o log negativo da probabilidade:
-$$
--log \ p(y|x) = -log(\frac{exp(f_y)}{\sum_{c=1}^{C}exp(f_c)})
-$$
-Mas isso é pouco usado. Um método mais usado é usar **entropia cruzada** (ou cross entropy loss)
-
-### Cross entropy loss
-
-Assumimos que existe uma probabilidade P verdadeira, e digamos que montamos uma distribuição de probabilidade Q seguindo nosso modelo. Queremos estimar quão boa é nossa aproximação, e para fazer isso calculamos:
-$$
-H(p, q) = -\sum_{c=1}^Cp(c)\ log\ q(c)
-$$
-Esse H é nossa medida de entropia cruzada. Note que como estamos buscando classificar os nossos dados em alguma classe C, esse vetor p tem a forma:
-
-```
-p = [0,0,0,1,0,0,0,0]
-```
-
-O que isso quer dizer é que nossos dados são da classe 3 (p[3] = 1)
-
-Então o que essa formula faz nesse caso é basicamente resultar em  $-log \ q(c)$ porque todos outros valores de p[c] são 0. Mas isso nem sempre é verdade! As vezes podemos ter probabilidades fracionarias em varios valores de p. 
-
-### De volta a classificação
-
-Assim, a classificação num dataset $\{x_i, y_i\}^N_{i=1}$pode ser feita usando a função $J(\theta)$, que é o log da função verossimilhança:
-$$
-J(\theta) = \frac{1}{N}\sum_{i=1}^{N} - log \ p(x_i|y_i;\theta)
-$$
-Substituindo a expressão de probabilidade que descrevemos ali em cima:
-$$
-J(\theta) = \frac{1}{N}\sum_{i=1}^{N} - log (\frac{exp(f_{y_i})}{\sum_{c=1}^Cexp(f_c)})
-$$
-Daqui pra frente, ao invés de escrever $f_y = w_y.x$ vamos escrever em notação completa de matriz: $f = Wx$.
-
-### Otimização tradicional em ML
-
-Em ml, geralmente os parâmetros são um vetor de pesos de d dimensões, consistindo apenas das colunas de W:
-$$
-\theta = \begin{bmatrix}
-W_{.1}
-\\
-\vdots
-\\
-W_{.d}
-\end{bmatrix}
-$$
-Onde cada item do vetor $\theta$ é uma coluna de W. Como cada coluna de W tem dimensão C, o vetor de parametros tem dimensão Cd.
-
-
-
-Vamos atualizar nosso modelo usando Descendente gradiente. Atualizar nosso modelo basicamente significa mover a linha que corta o gráfico para atualizar como classificamos os pontos no plano. Só lembrando, o gradiente pode ser definido como:
-$$
-\nabla_\theta J(\theta) =\begin{bmatrix}
-\nabla W_{.1}
-\\
-\vdots
-\\
-\nabla W_{.d}
-\end{bmatrix}
-$$
-
-## Classificadores em redes neurais
-
-O problema de regressões usando classificadores softmax é que essas classificações não são muito poderosas, pelo simples fato da classificação ser linear: só conseguimos traçar uma reta no espaço, mas e se eu quiser fazer uma classificação mais complexa?
-
-Redes neurais conseguem traçar limites não lineares no espaço (nonlinear decision boundaries, não sei se a tradução foi boa). Assim, conseguimos fazer classificações mais poderosas. 
-
 ### Introdução redes neurais
+
+![](/home/caio/Imagens/NeuralNetwork.png)
 
 As redes neurais surgiram como uma ideia de modelar computacionalmente o funcionamento de um neurônio. Você tem inputs de outros neurônios (nesse caso são os dados), e alguns desses impulsos nervosos são mais estimulantes aos neurônios, outros menos (aqui, usamos os pesos nos dados para regular o quão importante ele é pro neuronio). No corpo do neurônio, ele lida com toda a infirmação que ele recebe de todos outros neurônios (no caso da rede neural, é uma conta entre o valor e os pesos com um certo viés). Depois de tudo isso, ele cospe um impulso nervoso pro próximo neurônio (no nosso caso, computamos uma função dos valores de entrada para o proximo neuronio). Para classificar se o neurônio passa a informação adiante ou não (e quanto dessa informação é passada) modelamos cada neurônio como uma unidade de regressão logística.
 
@@ -102,7 +10,37 @@ Toda a idéia das redes neurais é se perguntar "Por que rodar apenas uma unidad
 
 Exceto que nessa rede a gente não quer, de antemão, decidir o que cada neurônio quer prever, e sim **deixar a rede neural descobrir o que é útil de ser previsto em cada neurônio**. 
 
-Mas como isso é feito? Bem, a rede neural em si possui um objetivo: Na ponta da rede neural vamos ter um classificador linear que pode dar resultados positivos ou negativos, e o que vamos fazer é dizer pra rede neural ir ajustando os parâmetros no meio da rede (chamamos esse trecho da rede neural de **hidden layer** ou camada oculta) para que o erro seja mínimo e o resultado máximo
+Mas como isso é feito? Bem, a rede neural em si possui um objetivo: Na ponta da rede neural vamos ter um classificador linear que pode dar resultados positivos ou negativos, e o que vamos fazer é dizer pra rede neural ir ajustando os parâmetros no meio da rede (chamamos esse trecho da rede neural de **hidden layer** ou camada oculta) para que o erro seja mínimo e o resultado máximo. 
+
+### Anatomia de um neurônio
+
+Cada neurônio recebe um dado (pode ser um dado de entrada, ou o dado computado por outro neurônio) e retorna esse dado computado. Normalmente o neurônio apenas retorna valores entre 0 e 1, porque queremos usar o grau de ativação de um neurônio como uma probabilidade. Para tanto, envolvemos o valor de saída do neurônio por uma função normalizadora (como a função logística, função RElu, função tangente hiperbólica). Cada neurônio faz uma operação nos seus dados, relacionando a entrada com seu peso correspondente e o viés.
+
+Da mesma forma que um neurônio humano, um perceptron (neurônio de uma rede neural) recebe um impulso, transforma ele em outra coisa, e encaminha esse impulso para outro neurônio ou uma terminação nervosa. Aqui que entra a utilidade de pesos e vieses na nossa rede neural: o que cada perceptron faz é olhar para seu peso e viés e **decide se deve valorizar ou não aquela entrada**. Neurônios com alto viés e peso alto vão valorizar muito sua entrada, e por consequência, vão ter uma saída com valor elevado. Neurônios com viés baixo e peso baixo não vão valorizar a sua entrada e por consequência vão ter valores de saídas baixos. O neurônio relaciona os pesos, entradas e vieses de uma maneira simples: Dado que os pesos são armazenados num vetor $W$, as entradas num vetor $x$ e os vieses num vetor $b$, temos que a ativação do i-ésimo neuronio de uma camada é: 
+$$
+z_i = w_i*x_i + b_i
+$$
+
+
+Todo valor de saída de um neurônio é alimentado para uma função que mapeia a sua saída para valores entre 0 e 1.  Isso é feito porque queremos que a saída de cada neurônio  - também chamada de **ativação do neurôno** -na ponta da rede neural seja um número de pode facilmente ser interpretado como uma probabilidade, e porque assim evitamos valores de saída muito grandes de um neurônio qualquer que podem enviesar a rede neural por completo.
+
+### Visão geral da estrutura de uma rede neural
+
+Uma rede neural é organizada em **camadas**. Normalmente, toda rede neural tem pelo menos 3 camadas:
+
+1. Camada de entrada: Aqui que colocamos nossos dados de **entrada**
+2. Camada oculta: Aqui que acontece a magia das redes neurais: Os valores de entrada interagem com os pesos e vieses e se **transformam** em algo diferente. Podemos ter mais do que 1 camada oculta.
+3. Camada de saída: Depois dos dados serem processados na camada oculta, eles são dispostos na camada de saída. Aqui fazemos a **avaliação** dos valores de saída: eles já estão bons o suficiente? Estão próximos do que esperamos? Se não estiverem, realizamos um processo chamado de **backpropagation** para atualizar os pesos e vieses e assim obter valores melhores.
+
+O processo de ir da camada de entrada até a camada de saída é chamado de **forward pass**.
+
+### Otimização de parâmetros
+
+Se analisarmos as transformações que cada neurônio faz, fica claro que a rede neural tem 2 parâmetros: Pesos e vieses. Quando criamos uma rede neural, normalmente inicializamos esses valores de maneira aleatória, e ao longo do tempo **treinamos** nossa rede neural para escolher valores ótimos de parâmetros para obtermos um valor de saída desejado (isto é, um valor tal que uma função de erro usada tenha resultado mínimo). Essa otimização é feita utilizando o algoritmo de **Stochastich Gradient descent (SGD)**. Essencialmente, o que fazemso é, dado parâmetros armazenados num vetor $\theta$ e uma função de erro $J(\theta)$, podemos fazera  aatualização como 
+$$
+\theta_j = \theta_{j-1} - \alpha\nabla_\theta J(\theta)
+$$
+Como o gradiente aponta a direção na qual a função cresce mais rapidamente, o que estamos fazendo aqui é atualizar os parâmetros $\theta$ para minimizarmos a função de erro, caminhando na direção de maior **decrescimento**. 
 
 ### Notação matricial para uma camada (modelo matemático)
 
@@ -112,6 +50,8 @@ Para cada camada, vamos ter
 2. Um vetor de saídas ($\vec{a}$)
 3. Um vetor de conectores, que determinam quanto cada conector é valorizado pela rede neural (seria o peso) - ($\vec{w}$)
 4. Um viés ($\vec{b}$)
+5. Um valor de saída do neurônio (z)
+6. O valor de ativação do neurônio (a)
 
 Assim, podemos relacionar essas variáveis por:
 $$
@@ -287,13 +227,11 @@ Tem uma maneira um pouco mais fácil de organizar as idéias com as derivações
    \frac{\part z}{\part x} = W
    $$
    
-
 2. Derivada upstream: É o que relaciona o neurônio atual com o próximo.
    $$
    \frac{\part s}{\part z}
    $$
    
-
 3. Derivada downstream: Propaga o conhecimento do próximo neurônio com as camadas anteriores do gradiente local. **É simplesmente o produto do gradiente local pela derivada upstream**
 
 ![](/home/caio/Área de trabalho/Screenshot_20200626_085859.png)
@@ -378,8 +316,9 @@ class MultiplyGate(object):
 ### Algumas dicas sobre modelar redes neurais
 
 * É bom fazer uma regularização da função de erro ([L2 Regularization](https://towardsdatascience.com/l1-and-l2-regularization-methods-ce25e7fc831c)) sobre todos parâmetros do modelo. Isso evita overfitting
-  * Quando o modelo se adapta bem até demais aos dados de treino, de forma que ele não consegue generalizar para novos dados do mundo
-
+  
+* Quando o modelo se adapta bem até demais aos dados de treino, de forma que ele não consegue generalizar para novos dados do mundo
+  
 * Valorize vetores e matrizes sobre for loops
 
 * Sobre funções de não linearidade:
